@@ -9,17 +9,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2f9a163349d142a4980326493293dfb6, type: 3}
+  m_Script: {fileID: 11500000, guid: e6ecaaae0ea91564f8e56d78be12afa0, type: 3}
   m_Name: CustomRP
   m_EditorClassIdentifier: 
-  shadowSettings:
-    maxDistance: 100
-    directional:
-      atlasSize: 1024
-      cascadeCount: 4
-      cascadeRatio1: 0.126
-      cascadeRatio2: 0.438
-      cascadeRatio3: 0.75
-  useDynamicBatching: 0
+  useDynamicBatching: 1
   useGPUInstancing: 1
-  useSRPBatcher: 0
+  useSRPBatcher: 1

@@ -1,17 +1,17 @@
- 
-#ifndef CUSTOM_SHADOW_CASTER_PASS_INCLUDED
+﻿#ifndef CUSTOM_SHADOW_CASTER_PASS_INCLUDED
 #define CUSTOM_SHADOW_CASTER_PASS_INCLUDED
-#include "ShaderLibrary/Common.hlsl"
-	 
-TEXTURE2D(_BaseMap);         //#define SAMPLER(samplerName)                  SamplerState samplerName
-SAMPLER(sampler_BaseMap);	 //#define TEXTURE2D(textureName)                Texture2D textureName
+#include "../ShaderLibrary/Common.hlsl"
+
+TEXTURE2D(_BaseMap);            //#define TEXTURE2D(textureName)                Texture2D textureName
+SAMPLER(sampler_BaseMap);	    //#define SAMPLER(samplerName)                  SamplerState samplerName
+
 
 //GPU Instancing
 UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
 //提供纹理的缩放和平移
+UNITY_DEFINE_INSTANCED_PROP(float4, _BaseMap_ST)
 UNITY_DEFINE_INSTANCED_PROP(float4, _BaseColor)
 UNITY_DEFINE_INSTANCED_PROP(float, _Cutoff)
-UNITY_DEFINE_INSTANCED_PROP(float4, _BaseMap_ST)
 UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
 
 //传入顶点着色器的数据结构
@@ -57,6 +57,6 @@ void ShadowCasterPassFragment(Varyings input)
 #if defined(_CLIPPING)
     clip(base.a - UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_Cutoff));
 #endif
-}
-#endif
+} 
 
+#endif
