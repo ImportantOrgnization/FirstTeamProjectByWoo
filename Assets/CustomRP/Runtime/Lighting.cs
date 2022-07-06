@@ -20,10 +20,12 @@ public class Lighting
     static int dirLightCountId = Shader.PropertyToID("_DirectionalLightCount");
     static int dirLightColorsId = Shader.PropertyToID("_DirectionalLightColors");
     static int dirLightDirectionsId = Shader.PropertyToID("_DirectionalLightDirections");
+    static int dirLightShadowDataId = Shader.PropertyToID("_DirectionalLightShadowData");
     //存储定向光的颜色和方向
     static Vector4[] dirLightColors = new Vector4[maxDirLightCount];
     static Vector4[] dirLightDirections = new Vector4[maxDirLightCount];
-
+	static Vector4[] dirLightShadowData = new Vector4[maxDirLightCount];
+    
     //存储相机剔除后的结果
     CullingResults cullingResults;
 	
@@ -52,7 +54,7 @@ public class Lighting
         dirLightColors[index] = visibleLight.finalColor;
         //通过VisibleLight.localToWorldMatrix属性找到前向矢量,它在矩阵第三列，还要进行取反
         dirLightDirections[index] = -visibleLight.localToWorldMatrix.GetColumn(2);
-        shadows.ReserveDirectionalShadows(visibleLight.light,index);
+        dirLightShadowData[index] = shadows.ReserveDirectionalShadows(visibleLight.light,index);
     }
     /// <summary>
     /// 存储并发送所有光源数据
@@ -83,6 +85,7 @@ public class Lighting
         buffer.SetGlobalInt(dirLightCountId, dirLightCount);
         buffer.SetGlobalVectorArray(dirLightColorsId, dirLightColors);
         buffer.SetGlobalVectorArray(dirLightDirectionsId, dirLightDirections);
+        buffer.SetGlobalVectorArray(dirLightShadowDataId,dirLightShadowData);
     }
     
     //释放阴影贴图RT内存

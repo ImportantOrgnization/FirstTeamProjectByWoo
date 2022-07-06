@@ -44,7 +44,7 @@ public class Shadows
         buffer.Clear();
     }
     
-    public void ReserveDirectionalShadows(Light light, int visibleLightIndex)
+    public Vector2 ReserveDirectionalShadows(Light light, int visibleLightIndex)
     {
         //存储可见光源的索引，前提是光源开启了阴影投射并且阴影强度大于0
         if (shadowedDirectionalLightCount < maxShadowedDirectionalLightCount 
@@ -53,8 +53,11 @@ public class Shadows
             && light.shadowStrength > 0f 
             && cullingResults.GetShadowCasterBounds(visibleLightIndex,out Bounds b))  //True if the light affects at least one shadow casting object in the Scene. 
         {
-            shadowedDirectionalLights[shadowedDirectionalLightCount++] = new ShadowedDirectionalLight {visibleLightIndex = visibleLightIndex,};    //TODO ???
+            shadowedDirectionalLights[shadowedDirectionalLightCount] = new ShadowedDirectionalLight {visibleLightIndex = visibleLightIndex,};   
+            //返回阴影强度和图块偏移
+            return new Vector2(light.shadowStrength, shadowedDirectionalLightCount++);
         }
+        return Vector2.zero;
     }
     
     //阴影渲染
@@ -126,7 +129,28 @@ public class Shadows
     //返回一个从世界空间到阴影图块空间的转换矩阵
     Matrix4x4 ConvertToAtlasMatrix(Matrix4x4 m, Vector2 offset, int split)
     {
-        
+        //如果使用了反向ZBuffer
+        if (SystemInfo.usesReversedZBuffer)
+        {
+            m.m20 = -m.m20;
+            m.m21 = -m.m21;
+            m.m22 = -m.m22;
+            m.m23 = -m.m23;
+        }
+        //设置矩阵
+        float scale = 1f / split;
+        m.m00 = (0.5f * (m.m00 + m.m30) + offset.x * m.m30) * scale;
+        m.m01 = (0.5f * (m.m01 + m.m31) + offset.x * m.m31) * scale;
+        m.m02 = (0.5f * (m.m02 + m.m32) + offset.x * m.m32) * scale;
+        m.m03 = (0.5f * (m.m03 + m.m33) + offset.x * m.m33) * scale;
+        m.m10 = (0.5f * (m.m10 + m.m30) + offset.y * m.m30) * scale;
+        m.m11 = (0.5f * (m.m11 + m.m31) + offset.y * m.m31) * scale;
+        m.m12 = (0.5f * (m.m12 + m.m32) + offset.y * m.m32) * scale;
+        m.m13 = (0.5f * (m.m13 + m.m33) + offset.y * m.m33) * scale;
+        m.m20 = 0.5f * (m.m20 + m.m30);
+        m.m21 = 0.5f * (m.m21 + m.m31);
+        m.m22 = 0.5f * (m.m22 + m.m32);
+        m.m23 = 0.5f * (m.m23 + m.m33);
         return m;
     }
 
