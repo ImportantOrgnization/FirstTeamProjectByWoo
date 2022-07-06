@@ -64,8 +64,8 @@ float FadeShadowStrength(float distance,float scale,float fade)
 ShadowData GetShadowData(Surface surfaceWS)
 {
     ShadowData data;
+    //阴影最大距离的过渡阴影强度
     data.strength = FadeShadowStrength(surfaceWS.depth,_ShadowDistanceFade.x , _ShadowDistanceFade.y);
-    //data.strength = surfaceWS.depth < _ShadowDistance ? 1.0f : 0.0;
     int i;
     //如果物体表面到球心的平方距离小于球体半径的平方，就说明该物体在这层级联包围球中，得到合适的级联层级索引
     for(i = 0; i<_CascadeCount; i++)
@@ -74,6 +74,11 @@ ShadowData GetShadowData(Surface surfaceWS)
         float distanceSqr = DistanceSquared(surfaceWS.position,sphere.xyz);
         if(distanceSqr < sphere.w)
         {
+            //如果绘制的对象在最后一个级联的范围内，计算级联的过渡阴影强度，和阴影最大距离的过渡阴影强度相乘得到最终阴影强度
+            if(i == _CascadeCount - 1)
+            {   
+                data.strength *= FadeShadowStrength(distanceSqr , 1.0/sphere.w,_ShadowDistanceFade.z);
+            }
             break;
         }
     }
