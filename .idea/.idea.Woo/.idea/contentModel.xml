@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ContentModelStore">
+    <e p="C:\Users\admin\.Rider2019.3\system\extResources" t="IncludeRecursive" />
+    <e p="C:\Users\admin\.Rider2019.3\system\resharper-host\local\Transient\ReSharperHost\v193\SolutionCaches\_Woo.-1024275418.00" t="ExcludeRecursive" />
+    <e p="C:\Users\admin\Desktop\Woo" t="IncludeRecursive">
+      <e p="Assembly-CSharp-Editor.csproj" t="IncludeRecursive" />
+      <e p="Assembly-CSharp.csproj" t="IncludeRecursive" />
+      <e p="Assets" t="Include">
+        <e p="CustomRP" t="Include">
+          <e p="Editor" t="Include">
+            <e p="CustomShaderGUI.cs" t="Include" />
+          </e>
+          <e p="Examples" t="Include">
+            <e p="MeshBall.cs" t="Include" />
+            <e p="PerObjectMaterialProperties.cs" t="Include" />
+          </e>
+          <e p="Runtime" t="Include">
+            <e p="CameraRenderer.cs" t="Include" />
+            <e p="CameraRenderer.Editor.cs" t="Include" />
+            <e p="CustomRenderPipeLine.cs" t="Include" />
+            <e p="CustomRenderPipelineAsset.cs" t="Include" />
+            <e p="Lighting.cs" t="Include" />
+            <e p="Settings" t="Include">
+              <e p="ShadowSettings.cs" t="Include" />
+            </e>
+            <e p="Shadows.cs" t="Include" />
+          </e>
+          <e p="ShaderLibrary" t="Include">
+            <e p="BRDF.hlsl" t="Include" />
+            <e p="Common.hlsl" t="Include" />
+            <e p="Light.hlsl" t="Include" />
+            <e p="Lighting.hlsl" t="Include" />
+            <e p="Surface.hlsl" t="Include" />
+            <e p="UnityInput.hlsl" t="Include" />
+          </e>
+          <e p="Shaders" t="Include">
+            <e p="Lit.shader" t="Include" />
+            <e p="LitPass.hlsl" t="Include" />
+            <e p="ShadowCasterPass.hlsl" t="Include" />
+            <e p="Unlit.shader" t="Include" />
+            <e p="UnlitPass.hlsl" t="Include" />
+          </e>
+        </e>
+      </e>
+      <e p="obj" t="ExcludeRecursive" />
+      <e p="Packages" t="ExcludeRecursive" />
+      <e p="Temp\bin" t="ExcludeRecursive" />
+      <e p="Woo.sln" t="IncludeFlat" />
+    </e>
+  </component>
+</project>
