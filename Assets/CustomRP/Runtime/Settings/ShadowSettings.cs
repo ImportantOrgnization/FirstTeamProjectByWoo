@@ -5,7 +5,11 @@ using UnityEngine;
 [Serializable]
 public class ShadowSettings 
 {
+    //阴影最大距离
     [Min(0f)] public float maxDistance = 100f;
+    //阴影过渡距离
+    [Range(0.001f, 1f)] public float distanceFade = 0.1f;
+    
     public enum TextureSize
     {
         _256 = 256, _512 = 512 , _1024= 1024 , _2048 = 2048 , _4096 = 4096 ,_8192 = 8192 ,
