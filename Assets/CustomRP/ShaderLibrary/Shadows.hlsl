@@ -8,9 +8,19 @@ TEXTURE2D_SHADOW(_DirectionalShadowAtlas);
 #define SHADOW_SAMPLER sampler_linear_clamp_compare
 SAMPLER_CMP(SHADOW_SAMPLER);
 
+//阴影数据
+struct ShadowData
+{
+    int cascadeIndex; 
+};
+
+#define MAX_CASCADE_COUNT 4
 CBUFFER_START(_CustomShadows)
+//级联数量和包围球数据
+int _CascadeCount;
+float4 _CascadeCullingSpheres[MAX_CASCADE_COUNT];
 //阴影转换矩阵
-float4x4 _DirectionalShadowMatrices[MAX_SHADOWD_DIRECTIONAL_LIGHT_COUNT];
+float4x4 _DirectionalShadowMatrices[MAX_SHADOWD_DIRECTIONAL_LIGHT_COUNT * MAX_CASCADE_COUNT];
 CBUFFER_END
 
 //阴影的数据信息
@@ -37,6 +47,25 @@ float GetDirectionalShadowAttenuation(DirectionalShadowData data, Surface surfac
     float shadow = SampleDirectionalShadowAtlas(positionSTS);
     //最终阴影衰减值是阴影强度和衰减因子的插值
     return lerp(1.0,shadow,data.strength);
+}
+
+//得到世界空间的表面阴影数据
+ShadowData GetShadowData(Surface surfaceWS)
+{
+    ShadowData data;
+    int i;
+    //如果物体表面到球心的平方距离小于球体半径的平方，就说明该物体在这层级联包围球中，得到合适的级联层级索引
+    for(i = 0; i<_CascadeCount; i++)
+    {
+        float4 sphere = _CascadeCullingSpheres[i];
+        float distanceSqr = DistanceSquared(surfaceWS.position,sphere.xyz);
+        if(distanceSqr < sphere.w)
+        {
+            break;
+        }
+    }
+    data.cascadeIndex = i;
+    return data;
 }
 
 #endif

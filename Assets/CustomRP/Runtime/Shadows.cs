@@ -8,8 +8,11 @@ public class Shadows
     private const string bufferName = "Shadows";
     private static int dirShadowAtlasId = Shader.PropertyToID("_DirectionalShadowAtlas");
     private static int dirShadowMatricesId = Shader.PropertyToID("_DirectionalShadowMatrices");
+    private static int cascadeCountId = Shader.PropertyToID("_CascadeCount");
+    private static int cascadeCullingSphereId = Shader.PropertyToID("_CascadeCullingSpheres");
+    
     //存储阴影转换矩阵
-    static Matrix4x4[] dirShadowMatrices = new Matrix4x4[maxShadowedDirectionalLightCount];
+    static Matrix4x4[] dirShadowMatrices = new Matrix4x4[maxShadowedDirectionalLightCount * maxCascades];
         
     CommandBuffer buffer = new CommandBuffer()
     {
@@ -29,6 +32,11 @@ public class Shadows
     ShadowedDirectionalLight[] shadowedDirectionalLights = new ShadowedDirectionalLight[maxShadowedDirectionalLightCount];    
     //已存储的可投射阴影的平行光的数量
     private int shadowedDirectionalLightCount;    
+
+    //最大级联数量
+    private const int maxCascades = 4;
+
+    static Vector4[] cascadeCullingSpheres = new Vector4[maxCascades];
 
     public void Setup(ScriptableRenderContext context, CullingResults cullingResults, ShadowSettings settings)
     {
@@ -55,7 +63,7 @@ public class Shadows
         {
             shadowedDirectionalLights[shadowedDirectionalLightCount] = new ShadowedDirectionalLight {visibleLightIndex = visibleLightIndex,};   
             //返回阴影强度和图块偏移
-            return new Vector2(light.shadowStrength, shadowedDirectionalLightCount++);
+            return new Vector2(light.shadowStrength, settings.directional.cascadeCount * shadowedDirectionalLightCount++);
         }
         return Vector2.zero;
     }
@@ -81,12 +89,19 @@ public class Shadows
 
         buffer.BeginSample(bufferName);
         ExecuteBuffer();
-        int split = shadowedDirectionalLightCount <= 1 ? 1 : 2;
+        //要分割的图块数量和大小
+        int tiles = shadowedDirectionalLightCount * settings.directional.cascadeCount;
+        int split = tiles <= 1 ? 1 : tiles <= 4 ? 2 : 4;
         int tileSize = atlasSize / split;
         for (int i = 0; i < shadowedDirectionalLightCount; i++)
         {
             RenderDirectionalShadows(i,split,tileSize);
         }
+        //将级联数量和包围球数据发送到GPU
+        buffer.SetGlobalInt(cascadeCountId,settings.directional.cascadeCount);
+        buffer.SetGlobalVectorArray(cascadeCullingSphereId,cascadeCullingSpheres);
+        
+        //阴影转换矩阵传入GPU
         buffer.SetGlobalMatrixArray(dirShadowMatricesId,dirShadowMatrices);
         buffer.EndSample(bufferName);
         
@@ -98,16 +113,34 @@ public class Shadows
     {
         ShadowedDirectionalLight light = shadowedDirectionalLights[index];
         var shadowSettings = new ShadowDrawingSettings(cullingResults, light.visibleLightIndex);
-        cullingResults.ComputeDirectionalShadowMatricesAndCullingPrimitives(light.visibleLightIndex, 
-            0, 1, Vector3.zero, tileSize, 0f,
-            out var viewMatrix, out var projectionMatrix, out var splitData);
-        
-        shadowSettings.splitData = splitData;
-        dirShadowMatrices[index] = ConvertToAtlasMatrix(projectionMatrix * viewMatrix, SetTileViewport(index, split, tileSize), split);
-        buffer.SetViewProjectionMatrices(viewMatrix,projectionMatrix);
-        ExecuteBuffer();
-        context.DrawShadows(ref shadowSettings);
-        
+        //得到级联阴影贴图需要的参数
+        int cascadeCount = settings.directional.cascadeCount;
+        int tileOffset = index * cascadeCount;
+        Vector3 ratios = settings.directional.CascadeRatios;
+        for (int i = 0; i < cascadeCount; i++)
+        {
+            //计算视图和投影矩阵和裁剪空间的立方体
+            cullingResults.ComputeDirectionalShadowMatricesAndCullingPrimitives(light.visibleLightIndex, i,
+                cascadeCount, ratios, tileSize, 0f,
+                out var viewMatrix, out var projectionMatrix, out var splitData);
+            //得到第一个光源包围球数据
+            if (index == 0)
+            {
+                Vector4 cullingSphere = splitData.cullingSphere;
+                //得到半径的平方
+                cullingSphere.w *= cullingSphere.w;
+                cascadeCullingSpheres[i] = cullingSphere;
+            }
+            
+            shadowSettings.splitData = splitData;
+            //调整图块索引，它等于光源的图块偏移加上级联的索引
+            int tileIndex = tileOffset + i;
+            dirShadowMatrices[tileIndex] = ConvertToAtlasMatrix(projectionMatrix * viewMatrix,
+                SetTileViewport(tileIndex, split, tileSize), split);
+            buffer.SetViewProjectionMatrices(viewMatrix,projectionMatrix);
+            ExecuteBuffer();
+            context.DrawShadows(ref shadowSettings);
+        }
     }
     
     public void Clearup()

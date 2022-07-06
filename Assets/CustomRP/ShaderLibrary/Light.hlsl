@@ -26,24 +26,24 @@ int GetDirectionalLightCount() {
 }
 
 //获取方向光阴影数据
-DirectionalShadowData GetDirectionalShadowData(int lightIndex)
+DirectionalShadowData GetDirectionalShadowData(int lightIndex,ShadowData shadowData)
 {
     DirectionalShadowData data;
     data.strength = _DirectionalLightShadowData[lightIndex].x;
-    data.tileIndex = _DirectionalLightShadowData[lightIndex].y;
+    data.tileIndex = _DirectionalLightShadowData[lightIndex].y + shadowData.cascadeIndex;
     return data;
 }
 
 //获取目标索引定向光的属性
-Light GetDirectionalLight (int index,Surface surfaceWS) {
+Light GetDirectionalLight (int index,Surface surfaceWS,ShadowData shadowData) {
 	Light light;
 	light.color = _DirectionalLightColors[index].rgb;
 	light.direction = _DirectionalLightDirections[index].xyz;
 	//得到阴影数据
-	DirectionalShadowData shadowData = GetDirectionalShadowData(index);
+	DirectionalShadowData dirShadowData = GetDirectionalShadowData(index,shadowData);
 	//得到阴影衰减
-	light.attenuation = GetDirectionalShadowAttenuation(shadowData,surfaceWS);
-	
+	light.attenuation = GetDirectionalShadowAttenuation(dirShadowData,surfaceWS);
+	//light.attenuation =shadowData.cascadeIndex /4.0;  //这句代码可以更加清晰地查看级联球的范围
 	return light;
 }
 
