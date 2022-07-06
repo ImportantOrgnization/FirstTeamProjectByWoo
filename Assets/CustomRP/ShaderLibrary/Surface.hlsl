@@ -9,6 +9,8 @@ struct Surface {
 	float metallic;
 	float smoothness;
 	float3 viewDirection;
+	//表面深度
+	float depth;
 };
 
 #endif

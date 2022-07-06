@@ -12,6 +12,8 @@ SAMPLER_CMP(SHADOW_SAMPLER);
 struct ShadowData
 {
     int cascadeIndex; 
+    //是否采样阴影标识
+    float strength;
 };
 
 #define MAX_CASCADE_COUNT 4
@@ -21,6 +23,7 @@ int _CascadeCount;
 float4 _CascadeCullingSpheres[MAX_CASCADE_COUNT];
 //阴影转换矩阵
 float4x4 _DirectionalShadowMatrices[MAX_SHADOWD_DIRECTIONAL_LIGHT_COUNT * MAX_CASCADE_COUNT];
+float _ShadowDistance;
 CBUFFER_END
 
 //阴影的数据信息
@@ -53,6 +56,7 @@ float GetDirectionalShadowAttenuation(DirectionalShadowData data, Surface surfac
 ShadowData GetShadowData(Surface surfaceWS)
 {
     ShadowData data;
+    data.strength = surfaceWS.depth < _ShadowDistance ? 1.0f : 0.0;
     int i;
     //如果物体表面到球心的平方距离小于球体半径的平方，就说明该物体在这层级联包围球中，得到合适的级联层级索引
     for(i = 0; i<_CascadeCount; i++)
@@ -63,6 +67,10 @@ ShadowData GetShadowData(Surface surfaceWS)
         {
             break;
         }
+    }
+    if(i == _CascadeCount) 
+    {
+        data.strength = 0.0;
     }
     data.cascadeIndex = i;
     return data;

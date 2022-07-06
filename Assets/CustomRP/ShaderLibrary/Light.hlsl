@@ -8,6 +8,7 @@ CBUFFER_START(_CustomLight)
 	//定向光源颜色、方向、阴影等数据
     float4 _DirectionalLightColors[MAX_DIRECTIONAL_LIGHT_COUNT];
     float4 _DirectionalLightDirections[MAX_DIRECTIONAL_LIGHT_COUNT];
+    //阴影强度和图块偏移
     float4 _DirectionalLightShadowData[MAX_DIRECTIONAL_LIGHT_COUNT];
 CBUFFER_END
 
@@ -29,7 +30,7 @@ int GetDirectionalLightCount() {
 DirectionalShadowData GetDirectionalShadowData(int lightIndex,ShadowData shadowData)
 {
     DirectionalShadowData data;
-    data.strength = _DirectionalLightShadowData[lightIndex].x;
+    data.strength = _DirectionalLightShadowData[lightIndex].x * shadowData.strength;
     data.tileIndex = _DirectionalLightShadowData[lightIndex].y + shadowData.cascadeIndex;
     return data;
 }
