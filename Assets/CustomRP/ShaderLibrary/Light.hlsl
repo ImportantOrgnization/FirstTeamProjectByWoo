@@ -32,6 +32,7 @@ DirectionalShadowData GetDirectionalShadowData(int lightIndex,ShadowData shadowD
     DirectionalShadowData data;
     data.strength = _DirectionalLightShadowData[lightIndex].x * shadowData.strength;
     data.tileIndex = _DirectionalLightShadowData[lightIndex].y + shadowData.cascadeIndex;
+    data.normalBias = _DirectionalLightShadowData[lightIndex].z;
     return data;
 }
 
@@ -43,7 +44,7 @@ Light GetDirectionalLight (int index,Surface surfaceWS,ShadowData shadowData) {
 	//得到阴影数据
 	DirectionalShadowData dirShadowData = GetDirectionalShadowData(index,shadowData);
 	//得到阴影衰减
-	light.attenuation = GetDirectionalShadowAttenuation(dirShadowData,surfaceWS);
+	light.attenuation = GetDirectionalShadowAttenuation(dirShadowData,shadowData,surfaceWS);
 	//light.attenuation =shadowData.cascadeIndex /4.0;  //这句代码可以更加清晰地查看级联球的范围
 	return light;
 }
