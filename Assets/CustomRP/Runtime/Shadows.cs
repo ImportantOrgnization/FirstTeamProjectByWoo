@@ -31,6 +31,8 @@ public class Shadows
         public int visibleLightIndex;
         //斜度比例偏差值
         public float slopScaleBias;
+        //阴影视锥近裁剪平面偏移
+        public float nearPlaneOffset;
     }
     //存储可投射阴影的可见光源的索引
     ShadowedDirectionalLight[] shadowedDirectionalLights = new ShadowedDirectionalLight[maxShadowedDirectionalLightCount];    
@@ -71,6 +73,7 @@ public class Shadows
             {
                 visibleLightIndex = visibleLightIndex,
                 slopScaleBias =  light.shadowBias,
+                nearPlaneOffset = light.shadowNearPlane,
             };   
             //返回阴影强度和图块偏移
             return new Vector3(light.shadowStrength, settings.directional.cascadeCount * shadowedDirectionalLightCount++,light.shadowNormalBias);
@@ -134,7 +137,7 @@ public class Shadows
         {
             //计算视图和投影矩阵和裁剪空间的立方体
             cullingResults.ComputeDirectionalShadowMatricesAndCullingPrimitives(light.visibleLightIndex, i,
-                cascadeCount, ratios, tileSize, 0f,
+                cascadeCount, ratios, tileSize, light.nearPlaneOffset,
                 out var viewMatrix, out var projectionMatrix, out var splitData);
             //得到第一个光源包围球数据
             if (index == 0)
