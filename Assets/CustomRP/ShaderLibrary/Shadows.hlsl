@@ -2,6 +2,20 @@
 #ifndef CUSTOM_SHADOWS_INCLUDED
 #define CUSTOM_SHADOWS_INCLUDED
 
+#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Shadow/ShadowSamplingTent.hlsl"
+//如果使用的是 PCF 3x3
+#if defined(_DIRECTIONAL_PCF3)
+//需要4个滤波样本
+    #define DIRECTIONAL_FILTER_SAMPLES 4
+    #define DIRECTIONAL_FILTER_SETUP SampleShadow_ComputeSamples_Tent_3x3
+#elif defined(_DIRECTIONAL_PCF5)
+    #define DIRECTIONAL_FILTER_SAMPLES 9
+    #define DIRECTIONAL_FILTER_SETUP SampleShadow_ComputeSamples_Tent_5x5
+#elif defined(_DIRECTIONAL_PCF7)
+    #define DIRECTIONAL_FILTER_SAMPLES 16
+    #define DIRECTIONAL_FILTER_SETUP SampleShadow_ComputeSamples_Tent_7x7
+#endif
+
 #define MAX_SHADOWD_DIRECTIONAL_LIGHT_COUNT 4
 //阴影图集
 TEXTURE2D_SHADOW(_DirectionalShadowAtlas);
@@ -28,6 +42,7 @@ float4x4 _DirectionalShadowMatrices[MAX_SHADOWD_DIRECTIONAL_LIGHT_COUNT * MAX_CA
 //float _ShadowDistance;
 //阴影过渡
 float4 _ShadowDistanceFade;
+float4 _ShadowAtlasSize;
 CBUFFER_END
 
 //阴影的数据信息
@@ -44,6 +59,28 @@ float SampleDirectionalShadowAtlas(float3 positionSTS)  //阴影纹理空间中�
     return SAMPLE_TEXTURE2D_SHADOW(_DirectionalShadowAtlas,SHADOW_SAMPLER,positionSTS);
 }
 
+//通过 DIRECTIONAL_FILTER_SETUP 方法获取多个采样权重和位置，然后根据这些信息采样
+float FilterDirectionalShadow(float3 positionSTS)
+{
+#if defined(DIRECTIONAL_FILTER_SETUP)
+    //样本权重
+    float weights[DIRECTIONAL_FILTER_SAMPLES];
+    //样本位置
+    float2 positions[DIRECTIONAL_FILTER_SAMPLES];
+    float4 size = _ShadowAtlasSize.yyxx;    //xy分量是图集纹素大小，zw分量是图集尺寸
+    DIRECTIONAL_FILTER_SETUP(size,positionSTS.xy,weights,positions);
+    float shadow = 0;
+    for(int i = 0 ; i < DIRECTIONAL_FILTER_SAMPLES; i++)
+    {
+        //遍历所有样本得到权重和
+        shadow += weights[i] * SampleDirectionalShadowAtlas(float3(positions[i].xy,positionSTS.z));
+    }
+    return shadow;
+#else
+    return SampleDirectionalShadowAtlas(positionSTS);
+#endif
+}
+
 //计算阴影衰减
 float GetDirectionalShadowAttenuation(DirectionalShadowData directional,ShadowData global, Surface surfaceWS)
 {
@@ -56,7 +93,8 @@ float GetDirectionalShadowAttenuation(DirectionalShadowData directional,ShadowDa
     
     //通过阴影转换矩阵和表面位置得到阴影纹理（图块）空间的位置，然后对图集进行采样
     float3 positionSTS = mul(_DirectionalShadowMatrices[directional.tileIndex],float4(surfaceWS.position + normalBias,1.0)).xyz;
-    float shadow = SampleDirectionalShadowAtlas(positionSTS);
+    //float shadow = SampleDirectionalShadowAtlas(positionSTS);
+    float shadow = FilterDirectionalShadow(positionSTS);
     //最终阴影衰减值是阴影强度和衰减因子的插值
     return lerp(1.0,shadow,directional.strength);
 }

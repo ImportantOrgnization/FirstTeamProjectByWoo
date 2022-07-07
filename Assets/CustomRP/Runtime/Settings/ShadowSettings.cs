@@ -9,7 +9,11 @@ public class ShadowSettings
     [Min(0f)] public float maxDistance = 100f;
     //阴影过渡距离
     [Range(0.001f, 1f)] public float distanceFade = 0.1f;
-    
+    //PCF滤波模式（Percentage-close filtering）
+    public enum FilterMode
+    {
+        PCF2x2,PCF3x3,PCF5x5,PCF7x7,
+    }
     public enum TextureSize
     {
         _256 = 256, _512 = 512 , _1024= 1024 , _2048 = 2048 , _4096 = 4096 ,_8192 = 8192 ,
@@ -19,6 +23,8 @@ public class ShadowSettings
     public struct Directional
     {
         public TextureSize atlasSize;
+
+        public FilterMode filter;
         //级联数量
         [Range(1, 4)] public int cascadeCount;
         //级联比例
@@ -31,6 +37,7 @@ public class ShadowSettings
     public Directional directional = new Directional()
     {
         atlasSize = TextureSize._1024,
+        filter = FilterMode.PCF2x2,
         cascadeCount = 4,
         cascadeRatio1 =  0.1f,
         cascadeRatio2 = 0.25f,

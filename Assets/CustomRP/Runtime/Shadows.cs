@@ -12,6 +12,10 @@ public class Shadows
     private static int cascadeCullingSphereId = Shader.PropertyToID("_CascadeCullingSpheres");
     private static int shadowDistanceFadeId = Shader.PropertyToID("_ShadowDistanceFade");
     private static int cascadeDataId = Shader.PropertyToID("_CascadeData");
+    private static int shadowAtlasSizeId = Shader.PropertyToID("_ShadowAtlasSize");
+    
+    private static string[] directionalFilterKeyWords = {"_DIRECTIONAL_PCF3", "_DIRECTIONAL_PCF5", "_DIRECTIONAL_PCF7"};
+    
     
     //存储阴影转换矩阵
     static Matrix4x4[] dirShadowMatrices = new Matrix4x4[maxShadowedDirectionalLightCount * maxCascades];
@@ -119,6 +123,9 @@ public class Shadows
         buffer.SetGlobalMatrixArray(dirShadowMatricesId,dirShadowMatrices);
         float f = 1f - settings.directional.cascadeFade;
         buffer.SetGlobalVector(shadowDistanceFadeId,new Vector4(1f/settings.maxDistance,1f/settings.distanceFade,1f/(1f - f*f)));
+        SetKeywords();
+        //传递图集大小和纹素大小
+        buffer.SetGlobalVector(shadowAtlasSizeId,new Vector4(atlasSize,1f/atlasSize));
         buffer.EndSample(bufferName);
         
         ExecuteBuffer();
@@ -211,9 +218,28 @@ public class Shadows
     {
         //包围球直径除以阴影图块尺寸 = 纹素大小
         float texelSize = 2f * cullingSphere.w / tileSize;
+        float filterSize = texelSize * ((float) settings.directional.filter + 1f);
+        cullingSphere.w -= filterSize;    //有了过滤之后，会增加采样范围，边界区域会采样到外面去，这种情况应该避免 
         //得到半径的平方
         cullingSphere.w *= cullingSphere.w;
         cascadeCullingSpheres[index] = cullingSphere;
-        cascadeData[index] = new Vector4(1f / cullingSphere.w , texelSize * 1.4142136f);   
+        cascadeData[index] = new Vector4(1f / cullingSphere.w , filterSize * 1.4142136f);   
+    }
+
+    //设置关键字开启哪种PCF滤波模式
+    void SetKeywords()
+    {
+        int enableIndex = (int) settings.directional.filter - 1;
+        for (int i = 0; i < directionalFilterKeyWords.Length; i++)
+        {
+            if (i == enableIndex)
+            {
+                buffer.EnableShaderKeyword(directionalFilterKeyWords[i]);
+            }
+            else
+            {
+                buffer.DisableShaderKeyword(directionalFilterKeyWords[i]);
+            }
+        }
     }
 }
