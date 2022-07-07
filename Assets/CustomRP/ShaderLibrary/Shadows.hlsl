@@ -28,6 +28,8 @@ struct ShadowData
     int cascadeIndex; 
     //是否采样阴影标识
     float strength;
+    //混合级联
+    float cascadeBlend;
 };
 
 #define MAX_CASCADE_COUNT 4
@@ -95,6 +97,13 @@ float GetDirectionalShadowAttenuation(DirectionalShadowData directional,ShadowDa
     float3 positionSTS = mul(_DirectionalShadowMatrices[directional.tileIndex],float4(surfaceWS.position + normalBias,1.0)).xyz;
     //float shadow = SampleDirectionalShadowAtlas(positionSTS);
     float shadow = FilterDirectionalShadow(positionSTS);
+    //如果级联混合小于1，代表在级联层过渡区域中，必须从下一个级联中采样并在两个值之间进行插值
+    if(global.cascadeBlend <1.0)
+    {
+        normalBias = surfaceWS.normal * (directional.normalBias * _CascadeData[global.cascadeIndex + 1].y);
+        positionSTS = mul(_DirectionalShadowMatrices[directional.tileIndex + 1],float4(surfaceWS.position + normalBias,1.0)).xyz;  
+        shadow = lerp(FilterDirectionalShadow(positionSTS) , shadow, global.cascadeBlend);
+    }
     //最终阴影衰减值是阴影强度和衰减因子的插值
     return lerp(1.0,shadow,directional.strength);
 }
@@ -109,6 +118,7 @@ float FadeShadowStrength(float distance,float scale,float fade)
 ShadowData GetShadowData(Surface surfaceWS)
 {
     ShadowData data;
+    data.cascadeBlend = 1.0;
     //阴影最大距离的过渡阴影强度
     data.strength = FadeShadowStrength(surfaceWS.depth,_ShadowDistanceFade.x , _ShadowDistanceFade.y);
     int i;
@@ -119,10 +129,16 @@ ShadowData GetShadowData(Surface surfaceWS)
         float distanceSqr = DistanceSquared(surfaceWS.position,sphere.xyz);
         if(distanceSqr < sphere.w)
         {
+            //计算级联阴影的过渡强度
+            float fade = FadeShadowStrength(distanceSqr , _CascadeData[i].x,_ShadowDistanceFade.z);
             //如果绘制的对象在最后一个级联的范围内，计算级联的过渡阴影强度，和阴影最大距离的过渡阴影强度相乘得到最终阴影强度
-            if(i == _CascadeCount - 1)
-            {   
-                data.strength *= FadeShadowStrength(distanceSqr , _CascadeData[i].x,_ShadowDistanceFade.z);
+            if(i == _CascadeCount -1)
+            {
+                data.strength *= fade;
+            }
+            else
+            {
+                data.cascadeBlend = fade;
             }
             break;
         }
