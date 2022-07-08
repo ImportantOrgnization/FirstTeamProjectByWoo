@@ -6,6 +6,7 @@
 #include "../ShaderLibrary/Light.hlsl"
 #include "../ShaderLibrary/BRDF.hlsl"
 #include "../ShaderLibrary/Lighting.hlsl"
+#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Random.hlsl"
 
 TEXTURE2D(_BaseMap);
 SAMPLER(sampler_BaseMap);
@@ -74,6 +75,8 @@ float4 LitPassFragment(Varyings input) : SV_TARGET {
 	surface.alpha = base.a;
 	surface.metallic = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Metallic);
 	surface.smoothness =UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Smoothness);
+	//计算抖动
+	surface.dither = InterleavedGradientNoise(input.positionCS.xy,0);
 	//通过表面属性和BRDF计算最终光照结果
 #if defined(_PREMULTIPLY_ALPHA)
 	BRDF brdf = GetBRDF(surface, true);

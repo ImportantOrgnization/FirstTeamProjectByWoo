@@ -11,6 +11,7 @@ struct Surface {
 	float3 viewDirection;
 	//表面深度
 	float depth;
+	float dither;
 };
 
 #endif

@@ -143,10 +143,23 @@ ShadowData GetShadowData(Surface surfaceWS)
             break;
         }
     }
+    //如果超出级联范围，不进行阴影采样
     if(i == _CascadeCount) 
     {
         data.strength = 0.0;
     }
+    //当混合模式为抖动模式时，如果我们不在最后一个级联中，且当级联混合值小于抖动值时，则跳到下一个级联
+#if defined(_CASCADE_BLEND_DITHER)
+    else if(data.cascadeBlend < surfaceWS.dither)
+    {
+        i += 1;
+    }
+#endif
+#if !defined(_CASCADE_BLEND_SOFT)
+    data.cascadeBlend = 1.0;
+#endif
+    
+    
     data.cascadeIndex = i;
     return data;
 }

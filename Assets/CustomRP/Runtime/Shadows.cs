@@ -15,7 +15,7 @@ public class Shadows
     private static int shadowAtlasSizeId = Shader.PropertyToID("_ShadowAtlasSize");
     
     private static string[] directionalFilterKeyWords = {"_DIRECTIONAL_PCF3", "_DIRECTIONAL_PCF5", "_DIRECTIONAL_PCF7"};
-    
+    private static string[] cascadeBlendKeywords = {"_CASCADE_BLEND_SOFT", "_CASCADE_BLEND_DITHER"};
     
     //存储阴影转换矩阵
     static Matrix4x4[] dirShadowMatrices = new Matrix4x4[maxShadowedDirectionalLightCount * maxCascades];
@@ -123,7 +123,8 @@ public class Shadows
         buffer.SetGlobalMatrixArray(dirShadowMatricesId,dirShadowMatrices);
         float f = 1f - settings.directional.cascadeFade;
         buffer.SetGlobalVector(shadowDistanceFadeId,new Vector4(1f/settings.maxDistance,1f/settings.distanceFade,1f/(1f - f*f)));
-        SetKeywords();
+        SetKeywords(directionalFilterKeyWords,(int) settings.directional.filter -1);
+        SetKeywords(cascadeBlendKeywords,(int) settings.directional.cascadeBlend -1);
         //传递图集大小和纹素大小
         buffer.SetGlobalVector(shadowAtlasSizeId,new Vector4(atlasSize,1f/atlasSize));
         buffer.EndSample(bufferName);
@@ -227,18 +228,17 @@ public class Shadows
     }
 
     //设置关键字开启哪种PCF滤波模式
-    void SetKeywords()
+    void SetKeywords(string[] keywords , int enabledIndex)
     {
-        int enableIndex = (int) settings.directional.filter - 1;
-        for (int i = 0; i < directionalFilterKeyWords.Length; i++)
+        for (int i = 0; i < keywords.Length; i++)
         {
-            if (i == enableIndex)
+            if (i == enabledIndex)
             {
-                buffer.EnableShaderKeyword(directionalFilterKeyWords[i]);
+                buffer.EnableShaderKeyword(keywords[i]);
             }
             else
             {
-                buffer.DisableShaderKeyword(directionalFilterKeyWords[i]);
+                buffer.DisableShaderKeyword(keywords[i]);
             }
         }
     }
