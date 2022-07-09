@@ -61,7 +61,11 @@ void ShadowCasterPassFragment(Varyings input)
     float4 baseCol = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_BaseColor);
     float4 base = baseMap * baseCol;
 #if defined (_SHADOWS_CLIP)
+    //透明度低于阈值的片元进行舍弃
     clip(base.a - UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_Cutoff));
+#elif defined(_SHADOWS_DITHER)
+    float dither = InterleavedGradientNoise(input.positionCS.xy,0);
+    clip(base.a - dither);
 #endif
 } 
 
