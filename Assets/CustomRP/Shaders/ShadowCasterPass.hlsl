@@ -60,7 +60,7 @@ void ShadowCasterPassFragment(Varyings input)
     float4 baseMap = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap , input.baseUV);    //#define SAMPLE_TEXTURE2D(textureName, samplerName, coord2)    textureName.Sample(samplerName, coord2)
     float4 baseCol = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_BaseColor);
     float4 base = baseMap * baseCol;
-#if defined(_CLIPPING)
+#if defined (_SHADOWS_CLIP)
     clip(base.a - UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_Cutoff));
 #endif
 } 
