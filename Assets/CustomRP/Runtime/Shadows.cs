@@ -141,6 +141,7 @@ public class Shadows
         int cascadeCount = settings.directional.cascadeCount;
         int tileOffset = index * cascadeCount;
         Vector3 ratios = settings.directional.CascadeRatios;
+        float cullingFactor = Mathf.Max(0f, 0.8f - settings.directional.cascadeFade);
         for (int i = 0; i < cascadeCount; i++)
         {
             //计算视图和投影矩阵和裁剪空间的立方体
@@ -154,7 +155,8 @@ public class Shadows
                 SetCascadeData(i,splitData.cullingSphere,tileSize);
                 
             }
-            
+            //剔除偏差
+            splitData.shadowCascadeBlendCullingFactor = cullingFactor;
             shadowSettings.splitData = splitData;
             //调整图块索引，它等于光源的图块偏移加上级联的索引
             int tileIndex = tileOffset + i;
