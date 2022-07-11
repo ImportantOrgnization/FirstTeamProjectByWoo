@@ -5,6 +5,7 @@
 #include "../ShaderLibrary/Shadows.hlsl"
 #include "../ShaderLibrary/Light.hlsl"
 #include "../ShaderLibrary/BRDF.hlsl"
+#include "../ShaderLibrary/GI.hlsl" 
 #include "../ShaderLibrary/Lighting.hlsl"
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Random.hlsl"
 
@@ -25,6 +26,7 @@ struct Attributes {
 	float2 baseUV : TEXCOORD0;
 	//表面法线
 	float3 normalOS : NORMAL;
+	GI_ATTRIBUTE_DATA
 	UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 //片元函数输入结构体
@@ -34,6 +36,7 @@ struct Varyings {
 	float2 baseUV : VAR_BASE_UV;
 	//世界法线
 	float3 normalWS : VAR_NORMAL;
+	GI_VARINGS_DATA
 	UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
@@ -44,6 +47,7 @@ Varyings LitPassVertex(Attributes input){
 	UNITY_SETUP_INSTANCE_ID(input);
 	//使UnlitPassVertex输出位置和索引,并复制索引
 	UNITY_TRANSFER_INSTANCE_ID(input, output);
+	TRANSFER_GI_DATA(input,output);
 	output.positionWS = TransformObjectToWorld(input.positionOS);
 	output.positionCS = TransformWorldToHClip(output.positionWS);
 	//计算世界空间的法线
@@ -83,7 +87,8 @@ float4 LitPassFragment(Varyings input) : SV_TARGET {
 #else
 	BRDF brdf = GetBRDF(surface);
 #endif
-	float3 color = GetLighting(surface, brdf);
+    GI gi = GetGI(GI_FRAGMENT_DATA(input));
+	float3 color = GetLighting(surface, brdf, gi);
 	return float4(color, surface.alpha);
 }
 
