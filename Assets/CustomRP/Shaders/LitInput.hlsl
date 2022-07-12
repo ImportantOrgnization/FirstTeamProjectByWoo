@@ -27,7 +27,7 @@ float4 GetBase(float2 baseUV)
     return map * color;
 }
 
-float GetCutoff(float baseUV)
+float GetCutoff(float2 baseUV)
 {
     return UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_Cutoff);
 }

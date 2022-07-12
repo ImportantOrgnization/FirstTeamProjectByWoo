@@ -91,24 +91,46 @@ float FilterDirectionalShadow(float3 positionSTS)
 #endif
 }
 
-//计算阴影衰减
-float GetDirectionalShadowAttenuation(DirectionalShadowData directional,ShadowData global, Surface surfaceWS)
+//得到烘焙阴影的衰减值
+float GetBakedShadow(ShadowMask mask)
 {
-    //如果不接受阴影，阴影衰减为1
-#if !defined(_RECEIVE_SHADOWS)
-    return 1.0;
-#endif
-    if(directional.strength <= 0.0)
+    float shadow = 1.0;
+    if(mask.distance)
     {
-        return 1.0;
+        shadow = mask.shadows.r;
     }
+    return shadow;
+}
+
+float GetBakedShadow(ShadowMask mask, float strength)
+{
+    if(mask.distance)
+    {
+        return lerp(1.0,GetBakedShadow(mask),strength);
+    }
+    return 1.0;
+}
+
+//混合烘焙和实时阴影
+float MixBakedAndRealtimeShadows(ShadowData global, float shadow , float strength)
+{
+    float baked = GetBakedShadow(global.shadowMask);
+    if(global.shadowMask.distance)
+    {
+        shadow = lerp(baked,shadow,global.strength);
+        return lerp(1.0,shadow,strength);
+    }
+    return lerp(1.0 ,shadow, strength * global.strength);
+}
+
+float GetCascadedShadow(DirectionalShadowData directional,ShadowData global,Surface surfaceWS)
+{
     //计算法线偏差
     float3 normalBias = surfaceWS.normal * (directional.normalBias * _CascadeData[global.cascadeIndex].y);
-    
-    //通过阴影转换矩阵和表面位置得到阴影纹理（图块）空间的位置，然后对图集进行采样
+     //通过阴影转换矩阵和表面位置得到阴影纹理（图块）空间的位置，然后对图集进行采样
     float3 positionSTS = mul(_DirectionalShadowMatrices[directional.tileIndex],float4(surfaceWS.position + normalBias,1.0)).xyz;
-    //float shadow = SampleDirectionalShadowAtlas(positionSTS);
     float shadow = FilterDirectionalShadow(positionSTS);
+    
     //如果级联混合小于1，代表在级联层过渡区域中，必须从下一个级联中采样并在两个值之间进行插值
     if(global.cascadeBlend <1.0)
     {
@@ -116,8 +138,28 @@ float GetDirectionalShadowAttenuation(DirectionalShadowData directional,ShadowDa
         positionSTS = mul(_DirectionalShadowMatrices[directional.tileIndex + 1],float4(surfaceWS.position + normalBias,1.0)).xyz;  
         shadow = lerp(FilterDirectionalShadow(positionSTS) , shadow, global.cascadeBlend);
     }
+    return shadow;
+}
+
+//计算阴影衰减
+float GetDirectionalShadowAttenuation(DirectionalShadowData directional,ShadowData global, Surface surfaceWS)
+{
+    //如果不接受阴影，阴影衰减为1
+#if !defined(_RECEIVE_SHADOWS)
+    return 1.0;
+#endif
+    float shadow;
+    if(directional.strength * global.strength <= 0.0)
+    {
+        shadow = GetBakedShadow(global.shadowMask,abs(directional.strength));
+    }
+    else
+    {
+        shadow = GetCascadedShadow(directional,global,surfaceWS);
+        shadow = MixBakedAndRealtimeShadows(global,shadow,directional.strength);
+    }
     //最终阴影衰减值是阴影强度和衰减因子的插值
-    return lerp(1.0,shadow,directional.strength);
+    return shadow;
 }
 
 //公式计算阴影过渡时的强度

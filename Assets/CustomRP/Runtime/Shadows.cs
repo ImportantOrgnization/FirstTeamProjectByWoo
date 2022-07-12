@@ -72,14 +72,19 @@ public class Shadows
         if (shadowedDirectionalLightCount < maxShadowedDirectionalLightCount 
             //还需加上一个判断，是否在阴影最大投射距离之内，有被该光源影响且需要投射阴影的物体存在，如果没有就不需要渲染光源的阴影贴图了
             && light.shadows!= LightShadows.None 
-            && light.shadowStrength > 0f 
-            && cullingResults.GetShadowCasterBounds(visibleLightIndex,out Bounds b))  //True if the light affects at least one shadow casting object in the Scene. 
+            && light.shadowStrength > 0f )
+            //&& cullingResults.GetShadowCasterBounds(visibleLightIndex,out Bounds b))  //True if the light affects at least one shadow casting object in the Scene. 
         {
             //如果使用了ShadowMask
             LightBakingOutput lightBaking = light.bakingOutput;
             if (lightBaking.lightmapBakeType == LightmapBakeType.Mixed && lightBaking.mixedLightingMode == MixedLightingMode.Shadowmask)
             {
                 useShadowMask = true;
+            }
+
+            if (!cullingResults.GetShadowCasterBounds(visibleLightIndex,out Bounds b))
+            {
+                return new Vector3(-light.shadowStrength,0f,0f);    //没有阴影投射，就用阴影遮罩，但是阴影强度大于零时，会采样阴影贴图，所以我们给个负值，让它去采样阴影遮罩
             }
             
             shadowedDirectionalLights[shadowedDirectionalLightCount] = new ShadowedDirectionalLight
