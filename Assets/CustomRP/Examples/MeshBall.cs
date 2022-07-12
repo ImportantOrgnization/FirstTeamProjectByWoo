@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 /// <summary>
 /// 生成1023个mesh和小球对象
@@ -27,6 +28,7 @@ public class MeshBall : MonoBehaviour
     Matrix4x4[] matrices = new Matrix4x4[1023];
     Vector4[] baseColors = new Vector4[1023];
 
+    private LightProbeProxyVolume lightProbeVolume = null;
 
     MaterialPropertyBlock block;
 
@@ -57,9 +59,23 @@ public class MeshBall : MonoBehaviour
             block.SetFloatArray(metallicId, metallic);
             block.SetFloatArray(smoothnessId, smoothness);
 
+            block.SetFloatArray(smoothnessId,smoothness);
+            
+            if (!lightProbeVolume)
+            {
+                var positions = new Vector3[1023];
+                for (int i = 0; i < matrices.Length; i++)
+                {
+                    positions[i] = matrices[i].GetColumn(3);
+                }
+                var lightProbes = new SphericalHarmonicsL2[1023];
+                LightProbes.CalculateInterpolatedLightAndOcclusionProbes(positions,lightProbes,null);
+                block.CopySHCoefficientArraysFrom(lightProbes);
+            }
             block.SetFloat(cutoffId, cutoff);
         }    
-		 //绘制网格实例
-        Graphics.DrawMeshInstanced(mesh,0,material,matrices,1023,block);
+        //绘制网格实例
+        Graphics.DrawMeshInstanced(mesh,0,material,matrices,1023,block,
+            ShadowCastingMode.On,true,0,null,lightProbeVolume ? LightProbeUsage.UseProxyVolume: LightProbeUsage.CustomProvided,lightProbeVolume);
     }
 }
