@@ -1,0 +1,13 @@
+/FirstTeamProjectByWoo.sln
+
+Library/
+
+obj/
+
+Temp/
+
+.idea/
+
+Logs/
+Assembly-CSharp.csproj
+Assembly-CSharp-Editor.csproj
