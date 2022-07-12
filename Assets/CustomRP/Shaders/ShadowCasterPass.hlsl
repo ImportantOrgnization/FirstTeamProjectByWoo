@@ -2,18 +2,6 @@
 #define CUSTOM_SHADOW_CASTER_PASS_INCLUDED
 #include "../ShaderLibrary/Common.hlsl"
 
-TEXTURE2D(_BaseMap);            //#define TEXTURE2D(textureName)                Texture2D textureName
-SAMPLER(sampler_BaseMap);	    //#define SAMPLER(samplerName)                  SamplerState samplerName
-
-
-//GPU Instancing
-UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
-//提供纹理的缩放和平移
-UNITY_DEFINE_INSTANCED_PROP(float4, _BaseMap_ST)
-UNITY_DEFINE_INSTANCED_PROP(float4, _BaseColor)
-UNITY_DEFINE_INSTANCED_PROP(float, _Cutoff)
-UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
-
 //传入顶点着色器的数据结构
 struct Attributes
 {
@@ -46,8 +34,7 @@ Varyings ShadowCasterPassVertex(Attributes input)
     output.positionCS.z = max(output.positionCS.z , output.positionCS.w * UNITY_NEAR_CLIP_VALUE);
 #endif
     
-    float4 baseST = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _BaseMap_ST);
-    output.baseUV = input.baseUV * baseST.xy + baseST.zw;
+    output.baseUV = TransformBaseUV(input.baseUV);
     
     return output;
 }
@@ -57,12 +44,10 @@ void ShadowCasterPassFragment(Varyings input)
 {
     
     UNITY_SETUP_INSTANCE_ID(input)
-    float4 baseMap = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap , input.baseUV);    //#define SAMPLE_TEXTURE2D(textureName, samplerName, coord2)    textureName.Sample(samplerName, coord2)
-    float4 baseCol = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_BaseColor);
-    float4 base = baseMap * baseCol;
+    float4 base = GetBase(input.baseUV);
 #if defined (_SHADOWS_CLIP)
     //透明度低于阈值的片元进行舍弃
-    clip(base.a - UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_Cutoff));
+    clip(base.a - GetCutoff(input.baseUV));
 #elif defined(_SHADOWS_DITHER)
     float dither = InterleavedGradientNoise(input.positionCS.xy,0);
     clip(base.a - dither);
