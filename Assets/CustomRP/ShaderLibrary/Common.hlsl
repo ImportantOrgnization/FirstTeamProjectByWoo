@@ -21,7 +21,7 @@ float DistanceSquared(float3 pA,float3 pB)
     return dot(pA - pB, pA - pB);
 }
 
-#if defined(_SHADOW_MASK_DISTANCE)
+#if defined(_SHADOW_MASK_DISTANCE) || defined(_SHADOW_MASK_ALWAYS)
     #define SHADOWS_SHADOWMASK
 #endif
 

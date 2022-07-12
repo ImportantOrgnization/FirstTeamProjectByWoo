@@ -25,6 +25,7 @@ SAMPLER_CMP(SHADOW_SAMPLER);
 //烘焙阴影数据
 struct ShadowMask
 {
+    bool always;
     bool distance;
     float4 shadows;
 };
@@ -95,7 +96,7 @@ float FilterDirectionalShadow(float3 positionSTS)
 float GetBakedShadow(ShadowMask mask)
 {
     float shadow = 1.0;
-    if(mask.distance)
+    if(mask.distance || mask.always)
     {
         shadow = mask.shadows.r;
     }
@@ -104,7 +105,7 @@ float GetBakedShadow(ShadowMask mask)
 
 float GetBakedShadow(ShadowMask mask, float strength)
 {
-    if(mask.distance)
+    if(mask.distance || mask.always)
     {
         return lerp(1.0,GetBakedShadow(mask),strength);
     }
@@ -115,6 +116,12 @@ float GetBakedShadow(ShadowMask mask, float strength)
 float MixBakedAndRealtimeShadows(ShadowData global, float shadow , float strength)
 {
     float baked = GetBakedShadow(global.shadowMask);
+    if(global.shadowMask.always)
+    {
+        shadow = lerp(1.0,shadow,global.strength);
+        shadow = min(baked , shadow);
+        return lerp(1.0,shadow,strength);
+    }
     if(global.shadowMask.distance)
     {
         shadow = lerp(baked,shadow,global.strength);
@@ -172,6 +179,7 @@ float FadeShadowStrength(float distance,float scale,float fade)
 ShadowData GetShadowData(Surface surfaceWS)
 {
     ShadowData data;
+    data.shadowMask.always = false;
     data.shadowMask.distance = false;
     data.shadowMask.shadows = 1.0;
     data.cascadeBlend = 1.0;

@@ -16,7 +16,7 @@ public class Shadows
     
     private static string[] directionalFilterKeyWords = {"_DIRECTIONAL_PCF3", "_DIRECTIONAL_PCF5", "_DIRECTIONAL_PCF7"};
     private static string[] cascadeBlendKeywords = {"_CASCADE_BLEND_SOFT", "_CASCADE_BLEND_DITHER"};
-    private static string[] shadowMaskKeywords = {"_SHADOW_MASK_DISTANCE"};
+    private static string[] shadowMaskKeywords = {"_SHADOW_MASK_ALWAYS", "_SHADOW_MASK_DISTANCE"};
     //存储阴影转换矩阵
     static Matrix4x4[] dirShadowMatrices = new Matrix4x4[maxShadowedDirectionalLightCount * maxCascades];
         
@@ -108,7 +108,7 @@ public class Shadows
         }
         //是否使用阴影蒙版
         buffer.BeginSample(bufferName);
-        SetKeywords(shadowMaskKeywords,useShadowMask?0:-1);
+        SetKeywords(shadowMaskKeywords,useShadowMask ? QualitySettings.shadowmaskMode == ShadowmaskMode.Shadowmask ? 0 : 1 : -1);
         buffer.EndSample(bufferName);
         ExecuteBuffer();
     }
