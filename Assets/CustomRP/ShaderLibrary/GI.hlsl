@@ -8,10 +8,26 @@ SAMPLER(samplerunity_Lightmap);
 
 TEXTURE3D_FLOAT(unity_ProbeVolumeSH);
 SAMPLER(samplerunity_ProbeVolumeSH);
+
+TEXTURE2D(unity_ShadowMask);
+SAMPLER(samplerunity_ShadowMask);
+
 struct GI{
     //漫反射颜色
     float3 diffuse;
+    ShadowMask shadowMask;
 };
+
+//采样shadowMask得到烘焙阴影数据
+float4 SampleBakedShadows(float2 lightMapUV)
+{
+#if defined(LIGHTMAP_ON)
+    return SAMPLE_TEXTURE2D(unity_ShadowMask,samplerunity_ShadowMask,lightMapUV);
+#else
+    return 1.0;
+#endif  
+}
+
 //光照探针采样
 float3 SampleLightProbe(Surface surfaceWS)
 {
@@ -66,7 +82,13 @@ float3 SampleLightMap(float2 lightMapUV)
 GI GetGI(float2 lightMapUV,Surface surfaceWS)
 {
     GI gi;
+    gi.shadowMask.distance = false;
+    gi.shadowMask.shadows = 1.0;
     gi.diffuse = SampleLightMap(lightMapUV) + SampleLightProbe(surfaceWS); 
+#if defined(_SHADOW_MASK_DISTANCE)
+    gi.shadowMask.distance = true;
+    gi.shadowMask.shadows = SampleBakedShadows(lightMapUV);
+#endif
     return gi;
 }
 

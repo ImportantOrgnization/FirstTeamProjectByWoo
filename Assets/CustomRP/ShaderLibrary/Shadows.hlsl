@@ -22,6 +22,13 @@ TEXTURE2D_SHADOW(_DirectionalShadowAtlas);
 #define SHADOW_SAMPLER sampler_linear_clamp_compare
 SAMPLER_CMP(SHADOW_SAMPLER);
 
+//烘焙阴影数据
+struct ShadowMask
+{
+    bool distance;
+    float4 shadows;
+};
+
 //阴影数据
 struct ShadowData
 {
@@ -30,6 +37,7 @@ struct ShadowData
     float strength;
     //混合级联
     float cascadeBlend;
+    ShadowMask shadowMask;
 };
 
 #define MAX_CASCADE_COUNT 4
@@ -122,6 +130,8 @@ float FadeShadowStrength(float distance,float scale,float fade)
 ShadowData GetShadowData(Surface surfaceWS)
 {
     ShadowData data;
+    data.shadowMask.distance = false;
+    data.shadowMask.shadows = 1.0;
     data.cascadeBlend = 1.0;
     //阴影最大距离的过渡阴影强度
     data.strength = FadeShadowStrength(surfaceWS.depth,_ShadowDistanceFade.x , _ShadowDistanceFade.y);
