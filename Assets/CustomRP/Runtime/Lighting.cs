@@ -15,7 +15,8 @@ public class Lighting
 	};
     //设置最大可见定向光数量
     const int maxDirLightCount = 4;
-
+    //定义其他类型光源的最大数量
+    private const int maxOtherLightCount = 64;
 
     static int dirLightCountId = Shader.PropertyToID("_DirectionalLightCount");
     static int dirLightColorsId = Shader.PropertyToID("_DirectionalLightColors");
@@ -25,6 +26,14 @@ public class Lighting
     static Vector4[] dirLightColors = new Vector4[maxDirLightCount];
     static Vector4[] dirLightDirections = new Vector4[maxDirLightCount];
 	static Vector4[] dirLightShadowData = new Vector4[maxDirLightCount];
+
+	private static int otherLightCountId = Shader.PropertyToID("_OtherLightCount");
+	private static int otherLightColorsId = Shader.PropertyToID("_OtherLightColors");
+	private static int otherLightPositionId = Shader.PropertyToID("_OtherLightPositions");
+	
+	//存储其他类型光源的颜色和位置数据
+	static Vector4[] otherLightColors = new Vector4[maxOtherLightCount];
+	static Vector4[] otherLightPositions = new Vector4[maxOtherLightCount];
     
     //存储相机剔除后的结果
     CullingResults cullingResults;
@@ -65,7 +74,7 @@ public class Lighting
         //得到所有影响相机渲染物体的可见光数据
         NativeArray<VisibleLight> visibleLights = cullingResults.visibleLights;
         
-        int dirLightCount = 0;
+        int dirLightCount = 0,otherLightCount = 0;
         for (int i = 0; i < visibleLights.Length; i++)
         {
             VisibleLight visibleLight = visibleLights[i];
@@ -83,9 +92,20 @@ public class Lighting
         }
 
         buffer.SetGlobalInt(dirLightCountId, dirLightCount);
-        buffer.SetGlobalVectorArray(dirLightColorsId, dirLightColors);
-        buffer.SetGlobalVectorArray(dirLightDirectionsId, dirLightDirections);
-        buffer.SetGlobalVectorArray(dirLightShadowDataId,dirLightShadowData);
+        if (dirLightCount > 0)
+        {
+	        buffer.SetGlobalVectorArray(dirLightColorsId, dirLightColors);
+	        buffer.SetGlobalVectorArray(dirLightDirectionsId, dirLightDirections);
+	        buffer.SetGlobalVectorArray(dirLightShadowDataId,dirLightShadowData);    
+        }
+        
+        buffer.SetGlobalInt(otherLightCountId,otherLightCount);
+        if (otherLightCount > 0)
+        {
+	        buffer.SetGlobalVectorArray(otherLightColorsId,otherLightColors);
+	        buffer.SetGlobalVectorArray(otherLightPositionId,otherLightPositions);
+        }
+        
     }
     
     //释放阴影贴图RT内存

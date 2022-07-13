@@ -3,6 +3,8 @@
 #define CUSTOM_LIGHT_INCLUDED
 
 #define MAX_DIRECTIONAL_LIGHT_COUNT 4
+#define MAX_OTHER_LIGHT_COUNT 64
+
 CBUFFER_START(_CustomLight)
 	int _DirectionalLightCount;
 	//定向光源颜色、方向、阴影等数据
@@ -10,6 +12,12 @@ CBUFFER_START(_CustomLight)
     float4 _DirectionalLightDirections[MAX_DIRECTIONAL_LIGHT_COUNT];
     //阴影强度和图块偏移
     float4 _DirectionalLightShadowData[MAX_DIRECTIONAL_LIGHT_COUNT];
+    
+    //非定向光源的属性
+    int _OtherLightCount;
+    float4 _OtherLightColors[MAX_OTHER_LIGHT_COUNT];
+    float4 _OtherLightPositions[MAX_OTHER_LIGHT_COUNT];
+    
 CBUFFER_END
 
 //灯光的属性
@@ -48,6 +56,12 @@ Light GetDirectionalLight (int index,Surface surfaceWS,ShadowData shadowData) {
 	light.attenuation = GetDirectionalShadowAttenuation(dirShadowData,shadowData,surfaceWS);
 	//light.attenuation =shadowData.cascadeIndex /4.0;  //这句代码可以更加清晰地查看级联球的范围
 	return light;
+}
+
+//获取非定向光源的数量
+int GetOtherLightCount()
+{
+    return _OtherLightCount;
 }
 
 #endif
