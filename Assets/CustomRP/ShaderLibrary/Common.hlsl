@@ -21,6 +21,14 @@ float DistanceSquared(float3 pA,float3 pB)
     return dot(pA - pB, pA - pB);
 }
 
+void ClipLOD(float2 positionCS, float fade)
+{
+#if defined(LOD_FADE_CROSSFADE)
+    float dither = InterleavedGradientNoise(positionCS.xy,0);
+    clip(fade + (fade < 0.0? dither : -dither));    //Lod过渡的时候，过渡的两个物体中有一个LOD Fade为负数
+#endif
+}
+
 #if defined(_SHADOW_MASK_DISTANCE) || defined(_SHADOW_MASK_ALWAYS)
     #define SHADOWS_SHADOWMASK
 #endif

@@ -54,6 +54,7 @@
 		    #pragma multi_compile _ LIGHTMAP_ON
             #pragma multi_compile_instancing
             #pragma shader_feature _RECEIVE_SHADOWS
+            #pragma multi_compile _ LOD_FADE_CROSSFADE
             #pragma vertex LitPassVertex
             #pragma fragment LitPassFragment
 		    //插入相关hlsl代码
@@ -72,6 +73,7 @@
             #pragma target 3.5
             #pragma shader_feature _CLIPPING
             #pragma shader_feature _ _SHADOWS_CLIP _SHADOWS_DITHER
+            #pragma multi_compile _ LOD_FADE_CROSSFADE
             #pragma multi_compile_instancing
             #pragma vertex ShadowCasterPassVertex
             #pragma fragment ShadowCasterPassFragment

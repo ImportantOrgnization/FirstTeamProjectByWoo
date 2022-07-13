@@ -4,7 +4,7 @@
 CBUFFER_START(UnityPerDraw)
 float4x4 unity_ObjectToWorld;
 float4x4 unity_WorldToObject;
-float4 unity_LODFade;
+float4 unity_LODFade;   //x存储的是过渡因子，y存储了相同的因子，只不过它被量化为16步，我们不使用它
 //相机位置
 float3 _WorldSpaceCameraPos;
 //这个矩阵包含一些在这里我们不需要的转换信息

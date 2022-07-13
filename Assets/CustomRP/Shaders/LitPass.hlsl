@@ -47,6 +47,14 @@ Varyings LitPassVertex(Attributes input){
 //片元函数
 float4 LitPassFragment(Varyings input) : SV_TARGET {
 	UNITY_SETUP_INSTANCE_ID(input);
+	
+/*  观察LOD过渡因子的行为
+#if defined(LOD_FADE_CROSSFADE)
+    return unity_LODFade.x;
+#endif
+*/
+    ClipLOD(input.positionCS,unity_LODFade.x);
+    
 	float4 base = GetBase(input.baseUV);
 #if defined(_CLIPPING)
 	//透明度低于阈值的片元进行舍弃
