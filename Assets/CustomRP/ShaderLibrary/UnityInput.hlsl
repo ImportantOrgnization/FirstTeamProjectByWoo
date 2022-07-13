@@ -10,6 +10,7 @@ float4 unity_LODFade;   //x存储的是过渡因子，y存储了相同的因子�
 real4 unity_WorldTransformParams;
 
 float4 unity_ProbesOcclusion;
+float4 unity_SpecCube0_HDR;
 
 float4 unity_LightmapST;
 float4 unity_DynamicLightmapST;
