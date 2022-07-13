@@ -15,7 +15,7 @@ CBUFFER_START(_CustomLight)
     
     //非定向光源的属性
     int _OtherLightCount;
-    float4 _OtherLightColors[MAX_OTHER_LIGHT_COUNT];
+    float4 _OtherLightColors[MAX_OTHER_LIGHT_COUNT];    //这是一个颜色乘以强度的值的队列
     float4 _OtherLightPositions[MAX_OTHER_LIGHT_COUNT];
     
 CBUFFER_END
@@ -62,6 +62,19 @@ Light GetDirectionalLight (int index,Surface surfaceWS,ShadowData shadowData) {
 int GetOtherLightCount()
 {
     return _OtherLightCount;
+}
+
+//获取指定索引的非定向光源数据
+Light GetOtherLight(int index , Surface surfaceWS,ShadowData shadowData)
+{
+    Light light;
+    light.color = _OtherLightColors[index].rgb;
+    float3 ray = _OtherLightPositions[index].xyz - surfaceWS.position;
+    light.direction = normalize(ray);
+    //光照强度随距离衰减
+    float distanceSqr = max(dot(ray,ray),0.00001);
+    light.attenuation = 1.0 / distanceSqr;
+    return light;
 }
 
 #endif

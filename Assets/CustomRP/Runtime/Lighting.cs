@@ -1,4 +1,5 @@
-﻿using Unity.Collections;
+﻿using System;
+using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Rendering;
 /// <summary>
@@ -79,15 +80,20 @@ public class Lighting
         {
             VisibleLight visibleLight = visibleLights[i];
 
-            if (visibleLight.lightType == LightType.Directional)
+            switch (visibleLight.lightType)
             {
-                //VisibleLight结构很大,我们改为传递引用不是传递值，这样不会生成副本
-                SetupDirectionalLight(dirLightCount++,ref visibleLight);
-                //当超过灯光限制数量中止循环
-                if (dirLightCount >= maxDirLightCount)
-                {
-                    break;
-                }
+	            case LightType.Spot:
+		            break;
+	            case LightType.Directional:
+		            if (dirLightCount < maxDirLightCount)
+		            {
+			            //VisibleLight结构很大,我们改为传递引用不是传递值，这样不会生成副本
+			            SetupDirectionalLight(dirLightCount ++ , ref visibleLight);
+		            }
+		            break;
+	            case LightType.Point:
+		            SetupPointLight(otherLightCount++ ,ref visibleLight);
+		            break;
             }
         }
 
@@ -106,6 +112,14 @@ public class Lighting
 	        buffer.SetGlobalVectorArray(otherLightPositionId,otherLightPositions);
         }
         
+    }
+    
+    //将点光源的颜色和位置信息存储到数组
+    void SetupPointLight(int index, ref VisibleLight visibleLight)
+    {
+	    otherLightColors[index] = visibleLight.finalColor;	//颜色乘以强度
+	    //位置信息在本地到世界的转换矩阵的最后一列
+	    otherLightPositions[index] = visibleLight.localToWorldMatrix.GetColumn(3);
     }
     
     //释放阴影贴图RT内存
