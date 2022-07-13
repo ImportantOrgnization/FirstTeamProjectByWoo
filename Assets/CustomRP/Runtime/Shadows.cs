@@ -66,25 +66,26 @@ public class Shadows
         buffer.Clear();
     }
     
-    public Vector3 ReserveDirectionalShadows(Light light, int visibleLightIndex)
+    public Vector4 ReserveDirectionalShadows(Light light, int visibleLightIndex)
     {
         //存储可见光源的索引，前提是光源开启了阴影投射并且阴影强度大于0
         if (shadowedDirectionalLightCount < maxShadowedDirectionalLightCount 
             //还需加上一个判断，是否在阴影最大投射距离之内，有被该光源影响且需要投射阴影的物体存在，如果没有就不需要渲染光源的阴影贴图了
             && light.shadows!= LightShadows.None 
             && light.shadowStrength > 0f )
-            //&& cullingResults.GetShadowCasterBounds(visibleLightIndex,out Bounds b))  //True if the light affects at least one shadow casting object in the Scene. 
         {
+            float maskChannel = -1;
             //如果使用了ShadowMask
             LightBakingOutput lightBaking = light.bakingOutput;
             if (lightBaking.lightmapBakeType == LightmapBakeType.Mixed && lightBaking.mixedLightingMode == MixedLightingMode.Shadowmask)
             {
                 useShadowMask = true;
+                maskChannel = lightBaking.occlusionMaskChannel; 
             }
 
-            if (!cullingResults.GetShadowCasterBounds(visibleLightIndex,out Bounds b))
+            if (!cullingResults.GetShadowCasterBounds(visibleLightIndex,out Bounds b)) //True if the light affects at least one shadow casting object in the Scene. 
             {
-                return new Vector3(-light.shadowStrength,0f,0f);    //没有阴影投射，就用阴影遮罩，但是阴影强度大于零时，会采样阴影贴图，所以我们给个负值，让它去采样阴影遮罩
+                return new Vector4(-light.shadowStrength,0f,0f,maskChannel);    //没有阴影投射，就用阴影遮罩，但是阴影强度大于零时，会采样阴影贴图，所以我们给个负值，让它去采样阴影遮罩
             }
             
             shadowedDirectionalLights[shadowedDirectionalLightCount] = new ShadowedDirectionalLight
@@ -94,9 +95,9 @@ public class Shadows
                 nearPlaneOffset = light.shadowNearPlane,
             };   
             //返回阴影强度和图块偏移
-            return new Vector3(light.shadowStrength, settings.directional.cascadeCount * shadowedDirectionalLightCount++,light.shadowNormalBias);
+            return new Vector4(light.shadowStrength, settings.directional.cascadeCount * shadowedDirectionalLightCount++,light.shadowNormalBias,maskChannel);
         }
-        return Vector3.zero;
+        return new Vector4(0,0,0,-1f);
     }
     
     //阴影渲染

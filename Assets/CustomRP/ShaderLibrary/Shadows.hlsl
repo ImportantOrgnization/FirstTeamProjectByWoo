@@ -62,6 +62,7 @@ struct DirectionalShadowData{
     int tileIndex;
     //法线偏差
     float normalBias;
+    int shadowMaskChannel;
 };
 
 //采样阴影图集
@@ -93,29 +94,32 @@ float FilterDirectionalShadow(float3 positionSTS)
 }
 
 //得到烘焙阴影的衰减值
-float GetBakedShadow(ShadowMask mask)
+float GetBakedShadow(ShadowMask mask,int channel)
 {
     float shadow = 1.0;
     if(mask.distance || mask.always)
     {
-        shadow = mask.shadows.r;
+        if(channel >= 0) 
+        {
+            shadow = mask.shadows[channel];
+        }
     }
     return shadow;
 }
 
-float GetBakedShadow(ShadowMask mask, float strength)
+float GetBakedShadow(ShadowMask mask, int channel, float strength)
 {
     if(mask.distance || mask.always)
     {
-        return lerp(1.0,GetBakedShadow(mask),strength);
+        return lerp(1.0,GetBakedShadow(mask,channel),strength);
     }
     return 1.0;
 }
 
 //混合烘焙和实时阴影
-float MixBakedAndRealtimeShadows(ShadowData global, float shadow , float strength)
+float MixBakedAndRealtimeShadows(ShadowData global, float shadow, int shadowMaskChannel , float strength)
 {
-    float baked = GetBakedShadow(global.shadowMask);
+    float baked = GetBakedShadow(global.shadowMask,shadowMaskChannel);
     if(global.shadowMask.always)
     {
         shadow = lerp(1.0,shadow,global.strength);
@@ -158,12 +162,12 @@ float GetDirectionalShadowAttenuation(DirectionalShadowData directional,ShadowDa
     float shadow;
     if(directional.strength * global.strength <= 0.0)
     {
-        shadow = GetBakedShadow(global.shadowMask,abs(directional.strength));
+        shadow = GetBakedShadow(global.shadowMask,directional.shadowMaskChannel,abs(directional.strength));
     }
     else
     {
         shadow = GetCascadedShadow(directional,global,surfaceWS);
-        shadow = MixBakedAndRealtimeShadows(global,shadow,directional.strength);
+        shadow = MixBakedAndRealtimeShadows(global,shadow,directional.shadowMaskChannel,directional.strength);
     }
     //最终阴影衰减值是阴影强度和衰减因子的插值
     return shadow;
