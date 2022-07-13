@@ -119,7 +119,11 @@ public class Lighting
     {
 	    otherLightColors[index] = visibleLight.finalColor;	//颜色乘以强度
 	    //位置信息在本地到世界的转换矩阵的最后一列
-	    otherLightPositions[index] = visibleLight.localToWorldMatrix.GetColumn(3);
+	    var position = visibleLight.localToWorldMatrix.GetColumn(3);
+	    //将光照范围的平方倒数存在光源位置的W分量中
+	    position.w = 1f / Mathf.Max(visibleLight.range * visibleLight.range, 0.00001f);
+	    otherLightPositions[index] = position;
+
     }
     
     //释放阴影贴图RT内存
