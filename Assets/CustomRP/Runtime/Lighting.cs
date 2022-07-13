@@ -18,23 +18,24 @@ public class Lighting
     const int maxDirLightCount = 4;
     //定义其他类型光源的最大数量
     private const int maxOtherLightCount = 64;
-
+	
+    //定向光
     static int dirLightCountId = Shader.PropertyToID("_DirectionalLightCount");
     static int dirLightColorsId = Shader.PropertyToID("_DirectionalLightColors");
     static int dirLightDirectionsId = Shader.PropertyToID("_DirectionalLightDirections");
     static int dirLightShadowDataId = Shader.PropertyToID("_DirectionalLightShadowData");
-    //存储定向光的颜色和方向
     static Vector4[] dirLightColors = new Vector4[maxDirLightCount];
     static Vector4[] dirLightDirections = new Vector4[maxDirLightCount];
 	static Vector4[] dirLightShadowData = new Vector4[maxDirLightCount];
-
+	
+	//点光 //聚光灯
 	private static int otherLightCountId = Shader.PropertyToID("_OtherLightCount");
 	private static int otherLightColorsId = Shader.PropertyToID("_OtherLightColors");
 	private static int otherLightPositionId = Shader.PropertyToID("_OtherLightPositions");
-	
-	//存储其他类型光源的颜色和位置数据
 	static Vector4[] otherLightColors = new Vector4[maxOtherLightCount];
 	static Vector4[] otherLightPositions = new Vector4[maxOtherLightCount];
+	private static int otherLightDirectionsId = Shader.PropertyToID("_OtherLightDirections");
+	static Vector4[] otherLightDirections = new Vector4[maxOtherLightCount];
     
     //存储相机剔除后的结果
     CullingResults cullingResults;
@@ -83,6 +84,10 @@ public class Lighting
             switch (visibleLight.lightType)
             {
 	            case LightType.Spot:
+		            if (otherLightCount < maxOtherLightCount)
+		            {
+			            SetupSpotLight(otherLightCount++ , ref visibleLight);
+		            }
 		            break;
 	            case LightType.Directional:
 		            if (dirLightCount < maxDirLightCount)
@@ -92,7 +97,10 @@ public class Lighting
 		            }
 		            break;
 	            case LightType.Point:
-		            SetupPointLight(otherLightCount++ ,ref visibleLight);
+		            if (otherLightCount < maxOtherLightCount)
+		            {
+			            SetupPointLight(otherLightCount++ ,ref visibleLight);    
+		            }
 		            break;
             }
         }
@@ -110,6 +118,7 @@ public class Lighting
         {
 	        buffer.SetGlobalVectorArray(otherLightColorsId,otherLightColors);
 	        buffer.SetGlobalVectorArray(otherLightPositionId,otherLightPositions);
+	        buffer.SetGlobalVectorArray(otherLightDirectionsId,otherLightDirections);
         }
         
     }
@@ -124,6 +133,19 @@ public class Lighting
 	    position.w = 1f / Mathf.Max(visibleLight.range * visibleLight.range, 0.00001f);
 	    otherLightPositions[index] = position;
 
+    }
+
+    //将聚光灯光源的颜色、位置、方向存储到数组
+    void SetupSpotLight(int index, ref VisibleLight visibleLight)
+    {
+	    otherLightColors[index] = visibleLight.finalColor;
+	    Vector4 position = visibleLight.localToWorldMatrix.GetColumn(3);
+	    position.w = 1f / Mathf.Max(visibleLight.range * visibleLight.range, 0.00001f);
+	    otherLightPositions[index] = position;
+	    //本地到世界的转换矩阵的第三列在求反得到光照方向
+	    var lightDirection =  -visibleLight.localToWorldMatrix.GetColumn(2);
+	    lightDirection.w = 1;	//TODO：教程有误，聚光灯和点光灯需要分开
+	    otherLightDirections[index] = lightDirection;
     }
     
     //释放阴影贴图RT内存
