@@ -12,6 +12,8 @@ struct BRDF {
 	float roughness;
 	//感知粗糙度
 	float perceptualRoughness;
+	//菲涅尔
+	float fresnel;
 };
 
 //电介质的反射率平均约0.04
@@ -19,7 +21,7 @@ struct BRDF {
 //计算不反射的值，将范围从 0-1 调整到 0-0.96，保持和URP中一样
 float OneMinusReflectivity (float metallic) {
 	float range = 1.0 - MIN_REFLECTIVITY;
-	return range - metallic * range;
+	return range - metallic * range;    //金属度越高，反射能力越强
 }
 
 //得到表面的BRDF数据
@@ -35,6 +37,7 @@ BRDF GetBRDF (Surface surface, bool applyAlphaToDiffuse = false) {
 	//光滑度转为实际粗糙度
 	brdf.perceptualRoughness = PerceptualSmoothnessToPerceptualRoughness(surface.smoothness);
 	brdf.roughness = PerceptualRoughnessToRoughness(brdf.perceptualRoughness);
+	brdf.fresnel = saturate(surface.smoothness + 1.0 - oneMinusReflectivity);
 	return brdf;
 }
 //根据公式得到镜面反射强度
@@ -54,7 +57,8 @@ float3 DirectBRDF (Surface surface, BRDF brdf, Light light) {
 
 float3 IndirectBRDF(Surface surface,BRDF brdf , float3 diffuse,float3 specular) //表面信息，brdf数据，从全局照明中获得的漫反射，镜面反射颜色
 {
-    float3 reflection = specular * brdf.specular;   //全局照明中的镜面反射颜色乘以brdf中的镜面反射颜色得到镜面反射照明
+    float fresnelStrength = surface.fresnelStrength * Pow4(1.0 - saturate(dot(surface.normal , surface.viewDirection)));
+    float3 reflection = specular * lerp(brdf.specular ,brdf.fresnel,fresnelStrength);   //全局照明中的镜面反射颜色乘以brdf中的镜面反射颜色得到镜面反射照明
     reflection /= brdf.roughness * brdf.roughness + 1.0;    //粗糙度对镜面反射造成削减
     return diffuse * brdf.diffuse + reflection;     
 }

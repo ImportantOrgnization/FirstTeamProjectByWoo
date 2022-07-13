@@ -121,9 +121,10 @@ public partial class CameraRenderer
         //设置相机清除状态
         buffer.ClearRenderTarget(flags <= CameraClearFlags.Depth, flags == CameraClearFlags.Color, 
             flags == CameraClearFlags.Color ? camera.backgroundColor.linear : Color.clear);
-        buffer.BeginSample(SampleName);     
+        buffer.BeginSample(SampleName);  
+        buffer.SetGlobalVector("_MyCamPos",this.camera.transform.position);
         ExecuteBuffer();
-        
+      
     }
     /// <summary>
     /// 执行缓冲区命令

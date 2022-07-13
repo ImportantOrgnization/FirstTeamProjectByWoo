@@ -22,7 +22,8 @@
 	    //投影模式
 	    [KeywordEnum(On,Clip,Dither,Off)] _Shadows ("Shadows" ,Float) = 0
 	    [Toggle(_RECEIVE_SHADOWS)] _ReceiveShadows ("Receive Shadows",Float) = 1
-	    
+	    //菲涅尔反射
+	    _Fresnel ("Fresnel",Range(0,1)) = 1
 	    [HideInInspector] _MainTex ("Texture for Lightmap" , 2D) = "white" {}
 	    [HideInInspector] _Color ("Color for Lightmap" , Color) = (0.5,0.5,0.5,1.0)
     }
