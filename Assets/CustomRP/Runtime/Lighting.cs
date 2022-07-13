@@ -36,6 +36,8 @@ public class Lighting
 	static Vector4[] otherLightPositions = new Vector4[maxOtherLightCount];
 	private static int otherLightDirectionsId = Shader.PropertyToID("_OtherLightDirections");
 	static Vector4[] otherLightDirections = new Vector4[maxOtherLightCount];
+	private static int otherLightSpotAnglesId = Shader.PropertyToID("_OtherLightSpotAngles");
+	static Vector4[] otherLightSpotAngles = new Vector4[maxOtherLightCount];
     
     //存储相机剔除后的结果
     CullingResults cullingResults;
@@ -119,6 +121,7 @@ public class Lighting
 	        buffer.SetGlobalVectorArray(otherLightColorsId,otherLightColors);
 	        buffer.SetGlobalVectorArray(otherLightPositionId,otherLightPositions);
 	        buffer.SetGlobalVectorArray(otherLightDirectionsId,otherLightDirections);
+	        buffer.SetGlobalVectorArray(otherLightSpotAnglesId,otherLightSpotAngles);
         }
         
     }
@@ -132,7 +135,8 @@ public class Lighting
 	    //将光照范围的平方倒数存在光源位置的W分量中
 	    position.w = 1f / Mathf.Max(visibleLight.range * visibleLight.range, 0.00001f);
 	    otherLightPositions[index] = position;
-
+	    
+	    otherLightSpotAngles[index] = new Vector4(0f,1f);	//xy的值在其他光照的计算中，会消除聚光灯计算过程对点光源光照计算的影响 //saturate( (d - cos(r0/2)) / (cos(ri/2) - cos(ro / 2)) ) ^2 		//spotAngleAttenuation = d * 0 + 1 = 1
     }
 
     //将聚光灯光源的颜色、位置、方向存储到数组
@@ -143,9 +147,13 @@ public class Lighting
 	    position.w = 1f / Mathf.Max(visibleLight.range * visibleLight.range, 0.00001f);
 	    otherLightPositions[index] = position;
 	    //本地到世界的转换矩阵的第三列在求反得到光照方向
-	    var lightDirection =  -visibleLight.localToWorldMatrix.GetColumn(2);
-	    lightDirection.w = 1;	//TODO：教程有误，聚光灯和点光灯需要分开
-	    otherLightDirections[index] = lightDirection;
+	    otherLightDirections[index] =  -visibleLight.localToWorldMatrix.GetColumn(2);
+	    Light light = visibleLight.light;
+	    float innerCos = Mathf.Cos(Mathf.Deg2Rad * 0.5f * light.innerSpotAngle);
+	    float outerCos = Mathf.Cos(Mathf.Deg2Rad * 0.5f * light.spotAngle);
+	    float angleRangeInv = 1f / Mathf.Max(innerCos - outerCos, 0.001f);
+	    otherLightSpotAngles[index] = new Vector4(angleRangeInv, -outerCos * angleRangeInv);
+
     }
     
     //释放阴影贴图RT内存
