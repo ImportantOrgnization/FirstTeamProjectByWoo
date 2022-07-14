@@ -38,7 +38,9 @@ public class Lighting
 	static Vector4[] otherLightDirections = new Vector4[maxOtherLightCount];
 	private static int otherLightSpotAnglesId = Shader.PropertyToID("_OtherLightSpotAngles");
 	static Vector4[] otherLightSpotAngles = new Vector4[maxOtherLightCount];
-    
+	private static int otherLightShadowDataId = Shader.PropertyToID("_OtherLightShadowData");
+	Vector4[] otherLightShadowData = new Vector4[maxOtherLightCount];
+	
     //存储相机剔除后的结果
     CullingResults cullingResults;
 	
@@ -122,6 +124,7 @@ public class Lighting
 	        buffer.SetGlobalVectorArray(otherLightPositionId,otherLightPositions);
 	        buffer.SetGlobalVectorArray(otherLightDirectionsId,otherLightDirections);
 	        buffer.SetGlobalVectorArray(otherLightSpotAnglesId,otherLightSpotAngles);
+	        buffer.SetGlobalVectorArray(otherLightShadowDataId,otherLightShadowData);
         }
         
     }
@@ -137,6 +140,9 @@ public class Lighting
 	    otherLightPositions[index] = position;
 	    
 	    otherLightSpotAngles[index] = new Vector4(0f,1f);	//xy的值在其他光照的计算中，会消除聚光灯计算过程对点光源光照计算的影响 //saturate( (d - cos(r0/2)) / (cos(ri/2) - cos(ro / 2)) ) ^2 		//spotAngleAttenuation = d * 0 + 1 = 1
+
+	    Light light = visibleLight.light;
+	    otherLightShadowData[index] = shadows.ReserveOtherShadows(light, index);
     }
 
     //将聚光灯光源的颜色、位置、方向存储到数组
@@ -153,7 +159,7 @@ public class Lighting
 	    float outerCos = Mathf.Cos(Mathf.Deg2Rad * 0.5f * light.spotAngle);
 	    float angleRangeInv = 1f / Mathf.Max(innerCos - outerCos, 0.001f);
 	    otherLightSpotAngles[index] = new Vector4(angleRangeInv, -outerCos * angleRangeInv);
-
+	    otherLightShadowData[index] = shadows.ReserveOtherShadows(light, index);
     }
     
     //释放阴影贴图RT内存
