@@ -28,7 +28,7 @@ public partial class CameraRenderer
     /// 相机渲染
     /// </summary>
     public void Render(ScriptableRenderContext context, Camera camera,
-        bool useDynamicBatching, bool useGPUInstancing,
+        bool useDynamicBatching, bool useGPUInstancing,bool useLightsPerObject,
         ShadowSettings shadowSettings)
     {
         this.context = context;
@@ -45,13 +45,13 @@ public partial class CameraRenderer
         
         buffer.BeginSample(SampleName);
         ExecuteBuffer();
-        lighting.Setup(context, cullingResults,shadowSettings);
+        lighting.Setup(context, cullingResults,shadowSettings,useLightsPerObject);
         buffer.EndSample(SampleName);
         
         Setup();
 
         //绘制几何体
-        DrawVisibleGeometry(useDynamicBatching, useGPUInstancing);
+        DrawVisibleGeometry(useDynamicBatching, useGPUInstancing,useLightsPerObject);
         //绘制SRP不支持的内置shader类型
         DrawUnsupportedShaders();
 
@@ -67,8 +67,9 @@ public partial class CameraRenderer
     /// <summary>
     /// 绘制几何体
     /// </summary>
-    void DrawVisibleGeometry(bool useDynamicBatching, bool useGPUInstancing)
+    void DrawVisibleGeometry(bool useDynamicBatching, bool useGPUInstancing,bool useLightsPerObject)
     {
+        PerObjectData lightsPerObjectFlags = useLightsPerObject ? PerObjectData.LightData | PerObjectData.LightIndices : PerObjectData.None;
         //设置绘制顺序和指定渲染相机
         var sortingSettings = new SortingSettings(camera)
         {
@@ -81,7 +82,7 @@ public partial class CameraRenderer
             enableDynamicBatching = useDynamicBatching,
             enableInstancing = useGPUInstancing,
             perObjectData = PerObjectData.Lightmaps | PerObjectData.ShadowMask | PerObjectData.LightProbe | PerObjectData.OcclusionProbe 
-                            | PerObjectData.LightProbeProxyVolume | PerObjectData.OcclusionProbeProxyVolume | PerObjectData.ReflectionProbes
+                            | PerObjectData.LightProbeProxyVolume | PerObjectData.OcclusionProbeProxyVolume | PerObjectData.ReflectionProbes | lightsPerObjectFlags
         };
         //渲染CustomLit表示的pass块
         drawingSettings.SetShaderPassName(1, litShaderTagId);

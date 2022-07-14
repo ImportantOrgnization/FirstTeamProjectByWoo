@@ -56,6 +56,8 @@
             #pragma multi_compile_instancing
             #pragma shader_feature _RECEIVE_SHADOWS
             #pragma multi_compile _ LOD_FADE_CROSSFADE
+            //是否使用逐对象光源
+            #pragma multi_compile _ _LIGHTS_PER_OBJECT
             #pragma vertex LitPassVertex
             #pragma fragment LitPassFragment
 		    //插入相关hlsl代码
