@@ -42,6 +42,12 @@ public class Shadows
     ShadowedDirectionalLight[] shadowedDirectionalLights = new ShadowedDirectionalLight[maxShadowedDirectionalLightCount];    
     //已存储的可投射阴影的平行光的数量
     private int shadowedDirectionalLightCount;    
+    
+    //可投射阴影的非定向光源的最大数量
+    private const int maxShadowedOtherLightCount = 16;
+    //已存在的可投射的非定向光的数量
+    private int shadowedOtherLightCount;
+    
 
     //最大级联数量
     private const int maxCascades = 4;
@@ -58,7 +64,7 @@ public class Shadows
         this.settings = settings;
         this.shadowedDirectionalLightCount = 0;
         useShadowMask = false;
-
+        shadowedOtherLightCount = 0;
     }
     public void ExecuteBuffer()
     {
@@ -199,17 +205,25 @@ public class Shadows
     //存储其他类型光源的阴影
     public Vector4 ReserveOtherShadows(Light light, int visibleLightIndex)
     {
-        if (light.shadows != LightShadows.None && light.shadowStrength > 0f)
+        if (light.shadows == LightShadows.None && light.shadowStrength <= 0f)
         {
-            LightBakingOutput lightBaking = light.bakingOutput;
-            if (lightBaking.lightmapBakeType == LightmapBakeType.Mixed && 
-                lightBaking.mixedLightingMode == MixedLightingMode.Shadowmask)
-            {
-                useShadowMask = true;
-                return new Vector4(light.shadowStrength,0f,0f,lightBaking.occlusionMaskChannel);
-            }
+            return new Vector4(0f,0f,0f,-1f);
         }
-        return new Vector4(0f,0f,0f,1f);
+        float maskChannel = -1f;
+        LightBakingOutput lightBaking = light.bakingOutput;
+        if (lightBaking.lightmapBakeType == LightmapBakeType.Mixed && 
+            lightBaking.mixedLightingMode == MixedLightingMode.Shadowmask)
+        {
+            useShadowMask = true;
+            maskChannel = lightBaking.occlusionMaskChannel;
+        }
+        
+        if (shadowedOtherLightCount >= maxShadowedOtherLightCount || !cullingResults.GetShadowCasterBounds(visibleLightIndex,out Bounds b))
+        {
+            return new Vector4(-light.shadowStrength , 0f,0f,maskChannel);
+        }
+        
+        return new Vector4(light.shadowStrength,0f,0f,maskChannel);
     }
     
     public void Clearup()
