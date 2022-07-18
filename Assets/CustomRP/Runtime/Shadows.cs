@@ -255,7 +255,7 @@ public class Shadows
         int tileSize = atlasSize / split;
         for (int i = 0; i < shadowedOtherLightCount; i++)
         {
-            //RenderSpotShadow(i,split,tileSize);
+            RenderSpotShadow(i,split,tileSize);
         }
         
         //阴影转换矩阵传入GPU
@@ -267,8 +267,35 @@ public class Shadows
         
         ExecuteBuffer();
     }
-
     
+    //渲染聚光灯阴影
+    void RenderSpotShadow(int index, int split, int tileSize)
+    {
+        ShadowedOtherLight light = shadowedOtherLights[index];
+        var shadowSettings = new ShadowDrawingSettings(cullingResults, light.visibleLightIndex);
+        cullingResults.ComputeSpotShadowMatricesAndCullingPrimitives(light.visibleLightIndex, out var viewMatrix,
+            out var projectionMatrix, out var splitData);
+        shadowSettings.splitData = splitData;
+        otherShadowMatrices[index] = ConvertToAtlasMatrix(projectionMatrix * viewMatrix, SetTileViewport(index, split, tileSize), split);
+        //设置视图投影矩阵
+        buffer.SetViewProjectionMatrices(viewMatrix,projectionMatrix);
+        //设置斜度比例偏差值
+        buffer.SetGlobalDepthBias(0f,light.slopeScaleBias);
+        //绘制阴影
+        ExecuteBuffer();
+        context.DrawShadows(ref shadowSettings);
+        buffer.SetGlobalDepthBias(0f,0f);
+    }
+
+    struct ShadowedOtherLight
+    {
+        public int visibleLightIndex;
+        public float slopeScaleBias;
+        public float normalBias;
+    }
+    //存储可投射阴影的非定向光源的数据
+    ShadowedOtherLight[] shadowedOtherLights = new ShadowedOtherLight[maxShadowedOtherLightCount];
+
     //存储其他类型光源的阴影
     public Vector4 ReserveOtherShadows(Light light, int visibleLightIndex)
     {
@@ -290,7 +317,15 @@ public class Shadows
             return new Vector4(-light.shadowStrength , 0f,0f,maskChannel);
         }
         
-        return new Vector4(light.shadowStrength,0f,0f,maskChannel);
+        shadowedOtherLights[shadowedOtherLightCount] = new ShadowedOtherLight
+        {
+            visibleLightIndex = visibleLightIndex,
+            slopeScaleBias = light.shadowBias,
+            normalBias = light.shadowNormalBias,
+        };
+        
+        return new Vector4(light.shadowStrength,shadowedOtherLightCount ++,0f,maskChannel);
+        
     }
     
     public void Clearup()
