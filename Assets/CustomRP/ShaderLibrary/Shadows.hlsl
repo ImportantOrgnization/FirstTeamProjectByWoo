@@ -111,12 +111,13 @@ float FilterDirectionalShadow(float3 positionSTS)
 #endif
 }
 
-float SampleOtherShadowAtlas(float3 positionSTS)
+float SampleOtherShadowAtlas(float3 positionSTS,float3 bounds)
 {
+    positionSTS.xy = clamp(positionSTS.xy,bounds.xy,bounds.xy + bounds.z);  //限制在左下角和右上角之间
     return SAMPLE_TEXTURE2D_SHADOW(_OtherShadowAtlas,SHADOW_SAMPLER,positionSTS);
 }
 
-float FilterOtherShadow(float3 positionSTS)
+float FilterOtherShadow(float3 positionSTS,float3 bounds)
 {
 #if defined(OTHER_FILTER_SETUP)
     //样本权重
@@ -129,11 +130,11 @@ float FilterOtherShadow(float3 positionSTS)
     for(int i = 0 ; i < OTHER_FILTER_SAMPLES ; i ++)
     {
         //遍历所有样本得到权重和
-        shadow += weights[i] * SampleOtherShadowAtlas(float3(positions[i].xy,positionSTS.z));
+        shadow += weights[i] * SampleOtherShadowAtlas(float3(positions[i].xy,positionSTS.z),bounds);
     }
     return shadow;
 #else
-    return SampleOtherShadowAtlas(positionSTS);
+    return SampleOtherShadowAtlas(positionSTS,bounds);
 #endif 
 }
 
@@ -295,7 +296,7 @@ float GetOtherShadow(OtherShadowData other,ShadowData global, Surface surfaceWS)
     float3 normalBias = surfaceWS.interpolatedNormal * (distanceToLightPlane * tileData.w);
     float4 positionSTS = mul(_OtherShadowMatrices[other.tileIndex],float4(surfaceWS.position + normalBias,1.0));
     //透视投影，变换位置XYZ除以Z
-    return FilterOtherShadow(positionSTS.xyz / positionSTS.w);
+    return FilterOtherShadow(positionSTS.xyz / positionSTS.w,tileData.xyz);
 }
 
 //得到其他类型光源的阴影衰减

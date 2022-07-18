@@ -208,6 +208,7 @@ public class Shadows
         int tileOffset = index * cascadeCount;
         Vector3 ratios = settings.directional.CascadeRatios;
         float cullingFactor = Mathf.Max(0f, 0.8f - settings.directional.cascadeFade);
+        float tileScale = 1f / split;
         for (int i = 0; i < cascadeCount; i++)
         {
             //计算视图和投影矩阵和裁剪空间的立方体
@@ -226,8 +227,7 @@ public class Shadows
             shadowSettings.splitData = splitData;
             //调整图块索引，它等于光源的图块偏移加上级联的索引
             int tileIndex = tileOffset + i;
-            dirShadowMatrices[tileIndex] = ConvertToAtlasMatrix(projectionMatrix * viewMatrix,
-                SetTileViewport(tileIndex, split, tileSize), split);
+            dirShadowMatrices[tileIndex] = ConvertToAtlasMatrix(projectionMatrix * viewMatrix, SetTileViewport(tileIndex, split, tileSize), tileScale);
             buffer.SetViewProjectionMatrices(viewMatrix,projectionMatrix);
             //设置斜度比例偏差值
             buffer.SetGlobalDepthBias(0f,light.slopScaleBias);
@@ -242,9 +242,13 @@ public class Shadows
     //非定向光的图块的数据
     static Vector4[] otherShadowTiles = new Vector4[maxShadowedOtherLightCount];
     //存储非定向光阴影图块数据
-    void SetOtherTileData(int index, float bias)
+    void SetOtherTileData(int index,Vector2 offset, float scale, float bias)    //offset 是图块坐标（整型），scale是单张尺寸（小于1的）
     {
-        Vector4 data = Vector4.zero;
+        float border = atlasSizes.w * 0.5f; //半个纹素大小
+        Vector4 data;
+        data.x = offset.x * scale + border;    //图块左下角x（小于1）
+        data.y = offset.y * scale + border;    //图块左下角y（小于1）
+        data.z = scale - border - border;      //图块大小（小于1）
         data.w = bias;
         otherShadowTiles[index] = data;
     }
@@ -299,9 +303,10 @@ public class Shadows
         float texelSize = 2f / (tileSize * projectionMatrix.m00); //m00 = cot(FOV/2) / Aspect , Aspect = W / H , texelSize = W / tileSize , 意义：距离光源一米处的图集的纹素大小
         float filterSize = texelSize * ((float) settings.other.filter + 1f);
         float bias = light.normalBias * filterSize * 1.4142136f ;
-        SetOtherTileData(index,bias);
-        
-        otherShadowMatrices[index] = ConvertToAtlasMatrix(projectionMatrix * viewMatrix, SetTileViewport(index, split, tileSize), split);
+        Vector2 offset = SetTileViewport(index, split, tileSize);
+        float tileScale = 1f / split;
+        SetOtherTileData(index,offset,tileScale, bias);
+        otherShadowMatrices[index] = ConvertToAtlasMatrix(projectionMatrix * viewMatrix,offset, tileScale);
         //设置视图投影矩阵
         buffer.SetViewProjectionMatrices(viewMatrix,projectionMatrix);
         //设置斜度比例偏差值
@@ -374,7 +379,7 @@ public class Shadows
     }
 
     //返回一个从世界空间到阴影图块空间的转换矩阵
-    Matrix4x4 ConvertToAtlasMatrix(Matrix4x4 m, Vector2 offset, int split)
+    Matrix4x4 ConvertToAtlasMatrix(Matrix4x4 m, Vector2 offset, float scale)
     {
         //如果使用了反向ZBuffer
         if (SystemInfo.usesReversedZBuffer)
@@ -385,7 +390,6 @@ public class Shadows
             m.m23 = -m.m23;
         }
         //设置矩阵
-        float scale = 1f / split;
         m.m00 = (0.5f * (m.m00 + m.m30) + offset.x * m.m30) * scale;
         m.m01 = (0.5f * (m.m01 + m.m31) + offset.x * m.m31) * scale;
         m.m02 = (0.5f * (m.m02 + m.m32) + offset.x * m.m32) * scale;
