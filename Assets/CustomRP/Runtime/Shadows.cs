@@ -314,6 +314,9 @@ public class Shadows
         {
             cullingResults.ComputePointShadowMatricesAndCullingPrimitives(light.visibleLightIndex, (CubemapFace) i, 0f,
                 out var viewMatrix, out var projectionMatrix, out var splitData);
+            viewMatrix.m11 = -viewMatrix.m11;
+            viewMatrix.m12 = -viewMatrix.m12;
+            viewMatrix.m13 = -viewMatrix.m13;
             shadowSettings.splitData = splitData;
             int tileIndex = index + i;
             Vector2 offset = SetTileViewport(tileIndex, split, tileSize);
