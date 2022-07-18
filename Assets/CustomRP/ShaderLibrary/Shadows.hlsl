@@ -211,8 +211,8 @@ ShadowData GetShadowData(Surface surfaceWS)
             break;
         }
     }
-    //如果超出级联范围，不进行阴影采样
-    if(i == _CascadeCount) 
+    //如果超出最大级联范围且级联数量大于0时，将全局阴影强度设为0（不进行阴影采样）
+    if(i == _CascadeCount && _CascadeCount > 0) 
     {
         data.strength = 0.0;
     }
@@ -239,6 +239,12 @@ struct OtherShadowData
     int shadowMaskChannel;
 };
 
+//得到非定向光源的实时阴影衰减
+float GetOtherShadow(OtherShadowData other,ShadowData global, Surface surfaceWS)
+{
+    return 1.0;
+}
+
 //得到其他类型光源的阴影衰减
 float GetOtherShadowAttenuation(OtherShadowData other,ShadowData global, Surface surfaceWS)
 {
@@ -246,13 +252,14 @@ float GetOtherShadowAttenuation(OtherShadowData other,ShadowData global, Surface
     return 1.0;
 #endif
     float shadow;
-    if(other.strength > 0.0)
+    if(other.strength * global.strength <= 0.0)
     {
-        shadow = GetBakedShadow(global.shadowMask,other.shadowMaskChannel,other.strength);
+        shadow = GetBakedShadow(global.shadowMask,other.shadowMaskChannel,abs(other.strength));
     }
     else
     {
-        shadow = 1.0;
+        shadow = GetOtherShadow(other,global,surfaceWS);
+        shadow = MixBakedAndRealtimeShadows(global,shadow,other.shadowMaskChannel,other.strength);
     }
     return shadow;
 }

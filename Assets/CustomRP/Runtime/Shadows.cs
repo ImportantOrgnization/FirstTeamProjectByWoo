@@ -110,6 +110,13 @@ public class Shadows
         //是否使用阴影蒙版
         buffer.BeginSample(bufferName);
         SetKeywords(shadowMaskKeywords,useShadowMask ? QualitySettings.shadowmaskMode == ShadowmaskMode.Shadowmask ? 0 : 1 : -1);
+        
+        //将级联计数发送到GPU
+        buffer.SetGlobalInt(cascadeCountId,shadowedDirectionalLightCount > 0 ? settings.directional.cascadeCount : 0);
+        //阴影距离过渡相关数据发送GPU
+        float f = 1f - settings.directional.cascadeFade;
+        buffer.SetGlobalVector(shadowDistanceFadeId,new Vector4(1f/settings.maxDistance,1f/settings.distanceFade,1f/(1f - f*f)));
+        
         buffer.EndSample(bufferName);
         ExecuteBuffer();
     }
@@ -134,15 +141,12 @@ public class Shadows
         {
             RenderDirectionalShadows(i,split,tileSize);
         }
-        //将级联数量和包围球数据发送到GPU
-        buffer.SetGlobalInt(cascadeCountId,settings.directional.cascadeCount);
+        //将级联包围球数据发送到GPU
         buffer.SetGlobalVectorArray(cascadeCullingSphereId,cascadeCullingSpheres);
         //级联数据发送GPU
         buffer.SetGlobalVectorArray(cascadeDataId,cascadeData);
         //阴影转换矩阵传入GPU
         buffer.SetGlobalMatrixArray(dirShadowMatricesId,dirShadowMatrices);
-        float f = 1f - settings.directional.cascadeFade;
-        buffer.SetGlobalVector(shadowDistanceFadeId,new Vector4(1f/settings.maxDistance,1f/settings.distanceFade,1f/(1f - f*f)));
         SetKeywords(directionalFilterKeyWords,(int) settings.directional.filter -1);
         SetKeywords(cascadeBlendKeywords,(int) settings.directional.cascadeBlend -1);
         //传递图集大小和纹素大小
