@@ -307,12 +307,13 @@ public class Shadows
         var shadowSettings = new ShadowDrawingSettings(cullingResults,light.visibleLightIndex);
         float texelSize = 2f / tileSize;    //6面体，每个面的FOV都是90°，不用算了，就2f
         float filterSize = texelSize * ((float) settings.other.filter + 1);
-        //计算发现偏差
+        //计算法线偏差
         var bias = light.normalBias * filterSize * 1.4142136f;
         float tileScale = 1f / split;
         for (int i = 0; i < 6; i++)
         {
-            cullingResults.ComputePointShadowMatricesAndCullingPrimitives(light.visibleLightIndex, (CubemapFace) i, 0f,
+            float fovBias = Mathf.Atan(1f + bias + filterSize) * Mathf.Rad2Deg * 2f - 90f;
+            cullingResults.ComputePointShadowMatricesAndCullingPrimitives(light.visibleLightIndex, (CubemapFace) i, fovBias,
                 out var viewMatrix, out var projectionMatrix, out var splitData);
             viewMatrix.m11 = -viewMatrix.m11;
             viewMatrix.m12 = -viewMatrix.m12;
