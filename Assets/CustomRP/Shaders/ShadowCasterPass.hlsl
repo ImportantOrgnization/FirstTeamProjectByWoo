@@ -2,6 +2,8 @@
 #define CUSTOM_SHADOW_CASTER_PASS_INCLUDED
 #include "../ShaderLibrary/Common.hlsl"
 
+bool _ShadowPancaking;
+
 //传入顶点着色器的数据结构
 struct Attributes
 {
@@ -28,11 +30,16 @@ Varyings ShadowCasterPassVertex(Attributes input)
     float3 positionWS = TransformObjectToWorld(input.positionOS);
     output.positionCS = TransformWorldToHClip(positionWS);          //世界坐标
     
+    if(_ShadowPancaking)
+    {
+         
 #if UNITY_REVERSED_Z
     output.positionCS.z = min(output.positionCS.z , output.positionCS.w * UNITY_NEAR_CLIP_VALUE);        
 #else
     output.positionCS.z = max(output.positionCS.z , output.positionCS.w * UNITY_NEAR_CLIP_VALUE);
 #endif
+    
+    }
     
     output.baseUV = TransformBaseUV(input.baseUV);
     

@@ -154,6 +154,9 @@ public class Shadows
         buffer.EndSample(bufferName);
         ExecuteBuffer();
     }
+    
+    private static int shadowPancakingId = Shader.PropertyToID("_ShadowPancaking");
+    
     //渲染定向光阴影至阴影贴图
     private void RenderDirectionalShadows()
     {
@@ -167,7 +170,9 @@ public class Shadows
         buffer.SetRenderTarget(dirShadowAtlasId,RenderBufferLoadAction.DontCare,RenderBufferStoreAction.Store); 
         //清除深度缓冲区
         buffer.ClearRenderTarget(true,false,Color.clear);
-
+        
+        buffer.SetGlobalFloat(shadowPancakingId,1f);
+        
         buffer.BeginSample(bufferName);
         ExecuteBuffer();
         //要分割的图块数量和大小
@@ -246,6 +251,7 @@ public class Shadows
         //清除深度缓冲区
         buffer.ClearRenderTarget(true,false,Color.clear);
 
+        buffer.SetGlobalFloat(shadowPancakingId,0f);
         
         buffer.BeginSample(bufferName);
         ExecuteBuffer();

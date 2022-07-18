@@ -42,6 +42,22 @@ struct ShadowData
 };
 
 #define MAX_CASCADE_COUNT 4
+
+#if defined(_OTHER_PCF3)
+    #define OTHER_FILTER_SAMPLES 4
+    #define OTHER_FILTER_SETUP SampleShadow_ComputeSamples_Tent_3x3
+#elif defined(_OTHER_PCF5)
+    #define OTHER_FILTER_SAMPLES 9
+    #define OTHER_FILTER_SETUP SampleShadow_ComputeSamples_Tent_5x5
+#elif defined(_OTHER_PCF7)
+    #define OTHER_FILTER_SAMPLES 16
+    #define OTHER_FILTER_SETUP SampleShadow_ComputeSamples_Tent_7x7
+#endif
+
+#define MAX_SHADOWED_OTHER_LIGHT_COUNT 16
+
+TEXTURE2D_SHADOW(_OtherShadowAtlas);
+
 CBUFFER_START(_CustomShadows)
 //级联数量和包围球数据
 int _CascadeCount;
@@ -54,6 +70,7 @@ float4x4 _DirectionalShadowMatrices[MAX_SHADOWD_DIRECTIONAL_LIGHT_COUNT * MAX_CA
 //阴影过渡
 float4 _ShadowDistanceFade;
 float4 _ShadowAtlasSize;
+float4x4 _OtherShadowMatrices[MAX_SHADOWED_OTHER_LIGHT_COUNT];
 CBUFFER_END
 
 //阴影的数据信息
@@ -91,6 +108,32 @@ float FilterDirectionalShadow(float3 positionSTS)
 #else
     return SampleDirectionalShadowAtlas(positionSTS);
 #endif
+}
+
+float SampleOtherShadowAtlas(float3 positionSTS)
+{
+    return SAMPLE_TEXTURE2D_SHADOW(_OtherShadowAtlas,SHADOW_SAMPLER,positionSTS);
+}
+
+float FilterOtherShadow(float3 positionSTS)
+{
+#if defined(OTHER_FILTER_SETUP)
+    //样本权重
+    real weights[OTHER_FILTER_SAMPLES];
+    //样本位置
+    real2 positions[OTHER_FILTER_SAMPLES];
+    float4 size = _ShadowAtlasSize.wwzz;
+    OTHER_FILTER_SETUP(size,positionSTS.xy,weights,positions)
+    float shadow = 0;
+    for(int i = 0 ; i < OTHER_FILTER_SAMPLES ; i ++)
+    {
+        //遍历所有样本得到权重和
+        shadow += weights[i] * SampleOtherShadowAtlas(float3(positions[i].xy,positionSTS.z));
+    }
+    return shadow;
+#else
+    return SampleOtherShadowAtlas(positionSTS);
+#endif 
 }
 
 //得到烘焙阴影的衰减值
@@ -236,13 +279,17 @@ ShadowData GetShadowData(Surface surfaceWS)
 struct OtherShadowData
 {
     float strength;
+    int tileIndex;
     int shadowMaskChannel;
 };
 
 //得到非定向光源的实时阴影衰减
 float GetOtherShadow(OtherShadowData other,ShadowData global, Surface surfaceWS)
 {
-    return 1.0;
+    float3 normalBias = 0.0;
+    float4 positionSTS = mul(_OtherShadowMatrices[other.tileIndex],float4(surfaceWS.position + normalBias,1.0));
+    //透视投影，变换位置XYZ除以Z
+    return FilterOtherShadow(positionSTS.xyz / positionSTS.w);
 }
 
 //得到其他类型光源的阴影衰减
