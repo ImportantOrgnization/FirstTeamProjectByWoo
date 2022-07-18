@@ -13,6 +13,8 @@ struct Surface {
 	float depth;
 	float dither;
 	float fresnelStrength;
+	//顶点着色器传过来的插值法线，未正则化的
+	float3 interpolatedNormal;
 };
 
 #endif

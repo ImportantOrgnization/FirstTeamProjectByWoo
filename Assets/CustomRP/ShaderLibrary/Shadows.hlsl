@@ -71,6 +71,7 @@ float4x4 _DirectionalShadowMatrices[MAX_SHADOWD_DIRECTIONAL_LIGHT_COUNT * MAX_CA
 float4 _ShadowDistanceFade;
 float4 _ShadowAtlasSize;
 float4x4 _OtherShadowMatrices[MAX_SHADOWED_OTHER_LIGHT_COUNT];
+float4 _OtherShadowTiles[MAX_SHADOWED_OTHER_LIGHT_COUNT];
 CBUFFER_END
 
 //阴影的数据信息
@@ -123,7 +124,7 @@ float FilterOtherShadow(float3 positionSTS)
     //样本位置
     real2 positions[OTHER_FILTER_SAMPLES];
     float4 size = _ShadowAtlasSize.wwzz;
-    OTHER_FILTER_SETUP(size,positionSTS.xy,weights,positions)
+    OTHER_FILTER_SETUP(size,positionSTS.xy,weights,positions);
     float shadow = 0;
     for(int i = 0 ; i < OTHER_FILTER_SAMPLES ; i ++)
     {
@@ -281,12 +282,17 @@ struct OtherShadowData
     float strength;
     int tileIndex;
     int shadowMaskChannel;
+    float3 lightPositionWS; //光的位置
+    float3 spotDirectionWS; //光的方向
 };
 
 //得到非定向光源的实时阴影衰减
 float GetOtherShadow(OtherShadowData other,ShadowData global, Surface surfaceWS)
 {
-    float3 normalBias = 0.0;
+    float4 tileData = _OtherShadowTiles[other.tileIndex];
+    float3 surfaceToLight = other.lightPositionWS - surfaceWS.position;
+    float distanceToLightPlane = dot(surfaceToLight,other.spotDirectionWS);
+    float3 normalBias = surfaceWS.interpolatedNormal * (distanceToLightPlane * tileData.w);
     float4 positionSTS = mul(_OtherShadowMatrices[other.tileIndex],float4(surfaceWS.position + normalBias,1.0));
     //透视投影，变换位置XYZ除以Z
     return FilterOtherShadow(positionSTS.xyz / positionSTS.w);

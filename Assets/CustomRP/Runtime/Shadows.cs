@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Experimental.GlobalIllumination;
 using UnityEngine.Rendering;
 
 public class Shadows
@@ -236,8 +237,18 @@ public class Shadows
             buffer.SetGlobalDepthBias(0f,0f);
         }
     }
+
+    private static int otherShadowTilesId = Shader.PropertyToID("_OtherShadowTiles");
+    //非定向光的图块的数据
+    static Vector4[] otherShadowTiles = new Vector4[maxShadowedOtherLightCount];
+    //存储非定向光阴影图块数据
+    void SetOtherTileData(int index, float bias)
+    {
+        Vector4 data = Vector4.zero;
+        data.w = bias;
+        otherShadowTiles[index] = data;
+    }
     
-     
     //渲染非定向光阴影贴图
     private void RenderOtherShadows()
     {
@@ -266,6 +277,7 @@ public class Shadows
         
         //阴影转换矩阵传入GPU
         buffer.SetGlobalMatrixArray(otherShadowMatricesId,otherShadowMatrices);
+        buffer.SetGlobalVectorArray(otherShadowTilesId,otherShadowTiles);
        
         SetKeywords(otherFilterKeywords,(int) settings.other.filter -1);
        
@@ -282,6 +294,13 @@ public class Shadows
         cullingResults.ComputeSpotShadowMatricesAndCullingPrimitives(light.visibleLightIndex, out var viewMatrix,
             out var projectionMatrix, out var splitData);
         shadowSettings.splitData = splitData;
+        
+        //计算法线偏差
+        float texelSize = 2f / (tileSize * projectionMatrix.m00); //m00 = cot(FOV/2) / Aspect , Aspect = W / H , texelSize = W / tileSize , 意义：距离光源一米处的图集的纹素大小
+        float filterSize = texelSize * ((float) settings.other.filter + 1f);
+        float bias = light.normalBias * filterSize * 1.4142136f ;
+        SetOtherTileData(index,bias);
+        
         otherShadowMatrices[index] = ConvertToAtlasMatrix(projectionMatrix * viewMatrix, SetTileViewport(index, split, tileSize), split);
         //设置视图投影矩阵
         buffer.SetViewProjectionMatrices(viewMatrix,projectionMatrix);
