@@ -52,6 +52,20 @@ public class ShadowSettings
         cascadeFade = 0.1f,
         cascadeBlend = Directional.CascadeBlendMode.Hard,
     };
+    
+    //非定向光源的阴影图集设置
+    [Serializable]
+    public struct Other
+    {
+        public TextureSize atlasSize;
+        public FilterMode filter;
+    }
+
+    public Other other = new Other()
+    {
+        atlasSize = TextureSize._1024,
+        filter =  FilterMode.PCF2x2,
+    };
 }
 
 
