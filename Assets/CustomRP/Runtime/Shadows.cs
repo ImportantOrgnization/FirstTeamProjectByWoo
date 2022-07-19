@@ -315,6 +315,10 @@ public class Shadows
             float fovBias = Mathf.Atan(1f + bias + filterSize) * Mathf.Rad2Deg * 2f - 90f;
             cullingResults.ComputePointShadowMatricesAndCullingPrimitives(light.visibleLightIndex, (CubemapFace) i, fovBias,
                 out var viewMatrix, out var projectionMatrix, out var splitData);
+            //unity为点光源渲染时，是把它们颠倒过来的，从而扭转了三角形的缠绕顺序
+            //通常从光的角度来看，正面是绘制的，但现在背面也被渲染出来了，这可以防止大多数的痤疮，但会引发漏光
+            //我们不能停止翻转，但可以通过上述方法得到视图矩阵，然后对矩阵第二行进行取反来撤销翻转
+            //该行的第一个分量始终为0，我们只需要将其他三个分量取反（y轴取反，相当于绕x轴旋转180度，m10始终为0）
             viewMatrix.m11 = -viewMatrix.m11;
             viewMatrix.m12 = -viewMatrix.m12;
             viewMatrix.m13 = -viewMatrix.m13;
