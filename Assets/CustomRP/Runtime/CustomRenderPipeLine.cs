@@ -11,9 +11,11 @@ public partial class CustomRenderPipeline : RenderPipeline
     bool useDynamicBatching, useGPUInstancing;
     bool useLightsPerObject;
     private ShadowSettings shadowSettings;
-    public CustomRenderPipeline(bool useDynamicBatching, bool useGPUInstancing, bool useSRPBatcher , bool useLightsPerObject , ShadowSettings shadowSettings)
+    private PostFXSettings postFxSettings;
+    public CustomRenderPipeline(bool useDynamicBatching, bool useGPUInstancing, bool useSRPBatcher , bool useLightsPerObject , ShadowSettings shadowSettings,PostFXSettings postFxSettings)
     {
         this.shadowSettings = shadowSettings;
+        this.postFxSettings = postFxSettings;
         this.useDynamicBatching = useDynamicBatching;
         this.useGPUInstancing = useGPUInstancing;
         this.useLightsPerObject = useLightsPerObject;
@@ -27,7 +29,7 @@ public partial class CustomRenderPipeline : RenderPipeline
         //遍历所有相机单独渲染
         foreach (Camera camera in cameras)
         {
-            renderer.Render(context, camera, useDynamicBatching, useGPUInstancing,useLightsPerObject,shadowSettings);
+            renderer.Render(context, camera, useDynamicBatching, useGPUInstancing,useLightsPerObject,shadowSettings,postFxSettings);
         }
     }
 }

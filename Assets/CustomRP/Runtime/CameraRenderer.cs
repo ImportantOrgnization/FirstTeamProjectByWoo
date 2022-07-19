@@ -29,7 +29,7 @@ public partial class CameraRenderer
     /// </summary>
     public void Render(ScriptableRenderContext context, Camera camera,
         bool useDynamicBatching, bool useGPUInstancing,bool useLightsPerObject,
-        ShadowSettings shadowSettings)
+        ShadowSettings shadowSettings,PostFXSettings postFxSettings)
     {
         this.context = context;
         this.camera = camera;
