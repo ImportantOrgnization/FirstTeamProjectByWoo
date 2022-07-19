@@ -24,6 +24,9 @@ public partial class CameraRenderer
     static ShaderTagId litShaderTagId = new ShaderTagId("CustomLit");
     //光照实例
     Lighting lighting = new Lighting();
+    
+    PostFXStack postFxStack = new PostFXStack();
+    
     /// <summary>
     /// 相机渲染
     /// </summary>
@@ -46,6 +49,7 @@ public partial class CameraRenderer
         buffer.BeginSample(SampleName);
         ExecuteBuffer();
         lighting.Setup(context, cullingResults,shadowSettings,useLightsPerObject);
+        postFxStack.Setup(context,camera,postFxSettings);
         buffer.EndSample(SampleName);
         
         Setup();
@@ -55,10 +59,14 @@ public partial class CameraRenderer
         //绘制SRP不支持的内置shader类型
         DrawUnsupportedShaders();
 
-        //绘制Gizmos
-        DrawGizmos();
-
-        lighting.Cleanup();
+        DrawGizmosBeforeFX();
+        if (postFxStack.IsActive)
+        {
+            postFxStack.Render(frameBufferId);
+        }
+        DrawGizmosAfterFX();
+        
+        Clearup();
         
         //提交命令缓冲区
         Submit();
@@ -111,6 +119,9 @@ public partial class CameraRenderer
         ExecuteBuffer();
         context.Submit();
     }
+
+    private static int frameBufferId = Shader.PropertyToID("_CameraFrameBuffer");
+    
     /// <summary>
     /// 设置相机的属性和矩阵
     /// </summary>
@@ -119,6 +130,17 @@ public partial class CameraRenderer
         context.SetupCameraProperties(camera);
         //得到相机的clear flags
         CameraClearFlags flags = camera.clearFlags;
+
+        if (postFxStack.IsActive)
+        {
+            if (flags > CameraClearFlags.Color)
+            {
+                flags = CameraClearFlags.Color;    //unity 会确保每帧开始时清理帧缓冲区，但是如果是自定义的纹理，结果就不一定，所以当启用特效时，应当最终清除颜色和深度缓冲
+            }
+            buffer.GetTemporaryRT(frameBufferId,camera.pixelWidth,camera.pixelHeight,32,FilterMode.Bilinear,RenderTextureFormat.Default);
+            buffer.SetRenderTarget(frameBufferId,RenderBufferLoadAction.DontCare,RenderBufferStoreAction.Store);
+        }
+        
         //设置相机清除状态
         buffer.ClearRenderTarget(flags <= CameraClearFlags.Depth, flags == CameraClearFlags.Color, 
             flags == CameraClearFlags.Color ? camera.backgroundColor.linear : Color.clear);
@@ -151,5 +173,14 @@ public partial class CameraRenderer
             return true;
         }
         return false;
+    }
+
+    void Clearup()
+    {
+        lighting.Cleanup();
+        if (postFxStack.IsActive)
+        {
+            buffer.ReleaseTemporaryRT(frameBufferId);
+        }
     }
 }

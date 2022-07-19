@@ -10,7 +10,9 @@ using UnityEngine.Rendering;
 public partial class CameraRenderer
 {
     partial void DrawUnsupportedShaders();
-    partial void DrawGizmos();
+    //partial void DrawGizmos();
+    partial void DrawGizmosBeforeFX();
+    partial void DrawGizmosAfterFX();
     partial void PrepareForSceneWindow();
 
     partial void PrepareBuffer();
@@ -53,15 +55,23 @@ public partial class CameraRenderer
         //绘制不支持的shaderTag类型的物体
         context.DrawRenderers(cullingResults, ref drawingSettings, ref filteringSettings);
     }
-    //绘制DrawGizmos
-    partial void DrawGizmos()
+
+    partial void DrawGizmosBeforeFX()
     {
         if (Handles.ShouldRenderGizmos())
         {
-            context.DrawGizmos(camera, GizmoSubset.PreImageEffects);
-            context.DrawGizmos(camera, GizmoSubset.PostImageEffects);
+            context.DrawGizmos(camera,GizmoSubset.PreImageEffects);
         }
     }
+
+    partial void DrawGizmosAfterFX()
+    {
+        if (Handles.ShouldRenderGizmos())
+        {
+            context.DrawGizmos(camera,GizmoSubset.PostImageEffects);
+        }
+    }
+    
     /// <summary>
     /// 在Game视图绘制的几何体也绘制到Scene视图中
     /// </summary>
