@@ -69,7 +69,7 @@ public partial class CameraRenderer
         Clearup();
         
         //提交命令缓冲区
-        Submit();
+        Submit(); 
     }
 
     /// <summary>

@@ -11,6 +11,8 @@ public partial class PostFXStack
 
     enum Pass
     {
+        BloomHorizontal,
+        BloomVertical,
         Copy,
     }
 
@@ -29,7 +31,7 @@ public partial class PostFXStack
     public PostFXStack()
     {
         bloomPyramidId = Shader.PropertyToID("_BloomPyramid0"); //只跟踪第一个标识符
-        for (int i = 0; i < maxBloomPyramidLevels; i++)
+        for (int i = 0; i < maxBloomPyramidLevels * 2; i++)
         {
             Shader.PropertyToID("_BloomPyramid" + i);    //确保占用接下来的标识符的位置,它们是连续的
         }
@@ -66,7 +68,7 @@ public partial class PostFXStack
         int width = camera.pixelWidth / 2, height = camera.pixelHeight / 2;
         RenderTextureFormat format = RenderTextureFormat.Default;
         int fromId = sourceId;
-        int toId = bloomPyramidId;
+        int toId = bloomPyramidId + 1;
         
         int i;
         for (i = 0; i < bloom.maxIterations; i++)
@@ -75,19 +77,25 @@ public partial class PostFXStack
             {
                 break;
             }
+
+            int midId = toId - 1;
+            buffer.GetTemporaryRT(midId,width,height,0,FilterMode.Bilinear,format);    
             buffer.GetTemporaryRT(toId,width,height,0,FilterMode.Bilinear,format);    //生成一个尺寸 1/2 大小的纹理
-            Draw(fromId,toId,Pass.Copy);
+            Draw(fromId,midId,Pass.BloomHorizontal);
+            Draw(midId,toId,Pass.BloomVertical);
             fromId = toId;
-            toId += 1;
+            toId += 2;
             width /= 2;
             height /= 2;
         }
         
         //将最后一级纹理图像数据拷贝到相机的渲染目标中
-        Draw(fromId,BuiltinRenderTextureType.CameraTarget,Pass.Copy);
+        Draw(fromId,BuiltinRenderTextureType.CameraTarget,Pass.BloomHorizontal);
         for (i -= 1; i >= 0; i--)
         {
-            buffer.ReleaseTemporaryRT(bloomPyramidId + i);
+            buffer.ReleaseTemporaryRT(fromId);
+            buffer.ReleaseTemporaryRT(fromId -1 );
+            fromId -= 2;
         }
         
         buffer.EndSample("Bloom");
