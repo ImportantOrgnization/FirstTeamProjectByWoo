@@ -63,6 +63,7 @@ public partial class PostFXStack
         buffer.DrawProcedural(Matrix4x4.identity, settings.Material,(int) pass,MeshTopology.Triangles,3);
     }
 
+    private int bloomBicubicUpsamplingId = Shader.PropertyToID("_BloomBicubicUpsampling");
     void DoBloom(int sourceId)
     {
         buffer.BeginSample("Bloom");
@@ -102,7 +103,7 @@ public partial class PostFXStack
         
         //将最后一级纹理图像数据拷贝到相机的渲染目标中
         //Draw(fromId,BuiltinRenderTextureType.CameraTarget,Pass.BloomHorizontal);
-
+        buffer.SetGlobalFloat(bloomBicubicUpsamplingId, bloom.bicubicUpsampling ? 1f : 0f);
         if (i > 1 )
         {
             
