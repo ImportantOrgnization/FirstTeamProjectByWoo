@@ -29,6 +29,12 @@ float4 GetSource(float2 screenUV)
     return SAMPLE_TEXTURE2D_LOD(_PostFXSource,sampler_linear_clamp,screenUV,0);
 }
 
+TEXTURE2D(_PostFXSource2);
+float4 GetSource2(float2 screenUV)
+{
+    return SAMPLE_TEXTURE2D_LOD(_PostFXSource2,sampler_linear_clamp,screenUV,0);
+}
+
 float4 CopyPassFragment(Varyings input) : SV_TARGET
 {
     return GetSource(input.screenUV);
@@ -75,6 +81,12 @@ float4 BloomVerticalPassFragment(Varyings input) : SV_TARGET
     return float4(color,1.0);
 }
 
+float4 BloomCombinePassFragment(Varyings input) : SV_TARGET
+{
+    float3 lowRes = GetSource(input.screenUV).rgb;
+    float3 highRes = GetSource2(input.screenUV).rgb;
+    return float4(lowRes + highRes , 1.0);
+}
 
 
 #endif

@@ -13,6 +13,7 @@ public partial class PostFXStack
     {
         BloomHorizontal,
         BloomVertical,
+        BloomCombine,
         Copy,
     }
 
@@ -23,6 +24,7 @@ public partial class PostFXStack
     private PostFXSettings settings;
 
     private int fxSourceId = Shader.PropertyToID("_PostFXSource");
+    private int fxSource2Id = Shader.PropertyToID("_PostFXSource2");
 
     private const int maxBloomPyramidLevels = 16;
     //纹理标识符
@@ -66,6 +68,15 @@ public partial class PostFXStack
         buffer.BeginSample("Bloom");
         PostFXSettings.BloomSettings bloom = settings.Bloom;
         int width = camera.pixelWidth / 2, height = camera.pixelHeight / 2;
+        
+        //如果跳过bloom，则用CopyPass作为替代
+        if (bloom.maxIterations == 0 || height < bloom.downscaleLimit || width < bloom.downscaleLimit)
+        {
+            Draw(sourceId , BuiltinRenderTextureType.CameraTarget,Pass.Copy);
+            buffer.EndSample("Bloom");
+            return;
+        }
+        
         RenderTextureFormat format = RenderTextureFormat.Default;
         int fromId = sourceId;
         int toId = bloomPyramidId + 1;
@@ -90,14 +101,33 @@ public partial class PostFXStack
         }
         
         //将最后一级纹理图像数据拷贝到相机的渲染目标中
-        Draw(fromId,BuiltinRenderTextureType.CameraTarget,Pass.BloomHorizontal);
-        for (i -= 1; i >= 0; i--)
+        //Draw(fromId,BuiltinRenderTextureType.CameraTarget,Pass.BloomHorizontal);
+
+        if (i > 1 )
         {
-            buffer.ReleaseTemporaryRT(fromId);
-            buffer.ReleaseTemporaryRT(fromId -1 );
-            fromId -= 2;
+            
+            buffer.ReleaseTemporaryRT(fromId - 1);
+            toId -= 5;
+        
+            for (i -= 1; i > 0; i--)
+            {
+                buffer.SetGlobalTexture(fxSource2Id,toId +1);
+                Draw(fromId,toId,Pass.BloomCombine);
+            
+                buffer.ReleaseTemporaryRT(fromId);
+                buffer.ReleaseTemporaryRT(toId +1 );
+                fromId = toId;
+                toId -= 2;
+            }
+        }
+        else
+        {
+            buffer.ReleaseTemporaryRT(bloomPyramidId);
         }
         
+        buffer.SetGlobalTexture(fxSource2Id,sourceId);    //sourceId = 自定义缓冲纹理 , formId = 经历了降采样模糊 以及 叠加操作后的间接纹理
+        Draw(fromId,BuiltinRenderTextureType.CameraTarget,Pass.BloomCombine);    
+        buffer.ReleaseTemporaryRT(fromId);
         buffer.EndSample("Bloom");
     }
     

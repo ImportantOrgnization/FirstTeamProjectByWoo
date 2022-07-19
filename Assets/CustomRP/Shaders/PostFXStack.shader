@@ -44,6 +44,17 @@
             #pragma fragment BloomVerticalPassFragment
             ENDHLSL
         }
+        
+        Pass
+        {
+            Name "Bloom Combine"
+            HLSLPROGRAM
+		    #pragma target 3.5
+            #pragma vertex DefaultPassVertex
+            #pragma fragment BloomCombinePassFragment
+            ENDHLSL
+        }
+       
     }
    
 }
