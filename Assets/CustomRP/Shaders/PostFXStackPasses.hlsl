@@ -3,7 +3,7 @@
 
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Filtering.hlsl"
 bool _BloomBicubicUpsampling;   //将双三次滤波上采样选项作为可选项
-
+float _BloomIntensity;
 TEXTURE2D(_PostFXSource);
 SAMPLER(sampler_linear_clamp);
 float4 _ProjectionParams;
@@ -119,7 +119,7 @@ float4 BloomCombinePassFragment(Varyings input) : SV_TARGET
     }
     
     float3 highRes = GetSource2(input.screenUV).rgb;
-    return float4(lowRes + highRes , 1.0);
+    return float4(lowRes * _BloomIntensity + highRes , 1.0);
 }
 
 //Bloom Prefilter Pass  提取高亮

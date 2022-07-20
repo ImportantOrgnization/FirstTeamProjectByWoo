@@ -27,7 +27,8 @@ public partial class PostFXStack
     private int fxSourceId = Shader.PropertyToID("_PostFXSource");         //用于降采样和高斯模糊以及后面的combine
     private int fxSource2Id = Shader.PropertyToID("_PostFXSource2");       //用于bloom combine
     private int bloomPrefilterId = Shader.PropertyToID("_BloomPrefilter"); //预滤波纹理
-    private int bloomThresholdId = Shader.PropertyToID("_BloomThreshold");   
+    private int bloomThresholdId = Shader.PropertyToID("_BloomThreshold");
+    private int bloomIntensityId = Shader.PropertyToID("_BloomIntensity");
     
     private const int maxBloomPyramidLevels = 16;
     //纹理标识符
@@ -74,7 +75,7 @@ public partial class PostFXStack
         int width = camera.pixelWidth / 2, height = camera.pixelHeight / 2;
         
         //如果跳过bloom，则用CopyPass作为替代
-        if (bloom.maxIterations == 0 || height < bloom.downscaleLimit * 2 || width < bloom.downscaleLimit * 2)
+        if (bloom.maxIterations == 0 || bloom.intensity <= 0f || height < bloom.downscaleLimit * 2 || width < bloom.downscaleLimit * 2)
         {
             Draw(sourceId , BuiltinRenderTextureType.CameraTarget,Pass.Copy);
             buffer.EndSample("Bloom");
@@ -120,6 +121,7 @@ public partial class PostFXStack
         //将最后一级纹理图像数据拷贝到相机的渲染目标中
         //Draw(fromId,BuiltinRenderTextureType.CameraTarget,Pass.BloomHorizontal);
         buffer.SetGlobalFloat(bloomBicubicUpsamplingId, bloom.bicubicUpsampling ? 1f : 0f);
+        buffer.SetGlobalFloat(bloomIntensityId,1f);
         if (i > 1 )
         {
             
@@ -141,7 +143,7 @@ public partial class PostFXStack
         {
             buffer.ReleaseTemporaryRT(bloomPyramidId);
         }
-        
+        buffer.SetGlobalFloat(bloomIntensityId,bloom.intensity);
         buffer.SetGlobalTexture(fxSource2Id,sourceId);    //sourceId = 自定义缓冲纹理 , formId = 经历了降采样模糊 以及 叠加操作后的间接纹理
         Draw(fromId,BuiltinRenderTextureType.CameraTarget,Pass.BloomCombine);    
         buffer.ReleaseTemporaryRT(fromId);
