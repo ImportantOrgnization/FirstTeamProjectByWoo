@@ -50,7 +50,7 @@ public partial class CameraRenderer
         buffer.BeginSample(SampleName);
         ExecuteBuffer();
         lighting.Setup(context, cullingResults,shadowSettings,useLightsPerObject);
-        postFxStack.Setup(context,camera,postFxSettings);
+        postFxStack.Setup(context,camera,postFxSettings,useHDR);
         buffer.EndSample(SampleName);
         
         Setup();
@@ -138,7 +138,8 @@ public partial class CameraRenderer
             {
                 flags = CameraClearFlags.Color;    //unity 会确保每帧开始时清理帧缓冲区，但是如果是自定义的纹理，结果就不一定，所以当启用特效时，应当最终清除颜色和深度缓冲
             }
-            buffer.GetTemporaryRT(frameBufferId,camera.pixelWidth,camera.pixelHeight,32,FilterMode.Bilinear,useHDR? RenderTextureFormat.DefaultHDR:RenderTextureFormat.Default);
+
+            buffer.GetTemporaryRT(frameBufferId, camera.pixelWidth, camera.pixelHeight, 32, FilterMode.Bilinear, useHDR ? RenderTextureFormat.DefaultHDR : RenderTextureFormat.Default);
             buffer.SetRenderTarget(frameBufferId,RenderBufferLoadAction.DontCare,RenderBufferStoreAction.Store);
         }
         

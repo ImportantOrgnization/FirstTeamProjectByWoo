@@ -14,9 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   shader: {fileID: 4800000, guid: 7c2bc534cc99deb4b95bccbaed2442e8, type: 3}
   bloom:
-    maxIterations: 0
-    downscaleLimit: 45
+    maxIterations: 2
+    downscaleLimit: 39
     bicubicUpsampling: 0
-    threshold: 0.77
-    thresholdKnee: 0.3
+    threshold: 0.55
+    thresholdKnee: 0.347
     intensity: 1.5

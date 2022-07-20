@@ -22,6 +22,7 @@ public class CustomRenderPipelineAsset : RenderPipelineAsset
     [SerializeField] 
     PostFXSettings postFxSettings = default;
 
+    //如果没有HDR，unity就会把缓冲设置为sRGB格式，这种格式的缓冲就像一个普通纹理一样，在写入缓冲前需要进行伽马矫正，在读取缓冲时需要进行一次解码操作
     [SerializeField] private bool allowHDR = true;
     
     //重写抽象方法，需要返回一个RenderPipeline实例对象
