@@ -6,7 +6,6 @@ bool _BloomBicubicUpsampling;   //将双三次滤波上采样选项作为可选�
 float _BloomIntensity;
 TEXTURE2D(_PostFXSource);
 SAMPLER(sampler_linear_clamp);
-float4 _ProjectionParams;
 
 struct Varyings
 {
@@ -99,7 +98,7 @@ float4 BloomVerticalPassFragment(Varyings input) : SV_TARGET
     };
     for(int i = 0 ; i < 5 ; i ++ )
     {
-        float offset = offsets[i] * 2.0 * GetSourceTexelSize().y ;
+        float offset = offsets[i] * GetSourceTexelSize().y ;
         color += GetSource(input.screenUV + float2(0.0,offset)).rgb * weights[i];
     }
     return float4(color,1.0);

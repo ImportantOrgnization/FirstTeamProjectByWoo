@@ -37,4 +37,6 @@ float3 _WorldSpaceCameraPos;    //将相机位置放在 UnityPerDraw 缓存区�
 float4x4 unity_MatrixVP;
 float4x4 unity_MatrixV;
 float4x4 glstate_matrix_projection;
+
+float4 _ProjectionParams;
 #endif
