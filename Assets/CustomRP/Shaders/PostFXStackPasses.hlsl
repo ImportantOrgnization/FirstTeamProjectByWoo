@@ -81,6 +81,7 @@ float4 BloomHorizontalPassFragment(Varyings input) : SV_TARGET
     };
     for(int i = 0 ; i < 9 ; i ++ )
     {
+        //下面公式中 2.0 的由来：下采样
         float offset = offsets[i] * 2.0 * GetSourceTexelSize().x ;      // 这就是双线性滤波模式 ，offset 是 1，2，3... ,然后乘以纹素 ，这样子，九个样本的平局值为 2* 2 源像素
         color += GetSource(input.screenUV + float2(offset,0.0)).rgb * weights[i];
     }
