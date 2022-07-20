@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using UnityEditor.Build.Reporting;
+using UnityEngine;
 using UnityEngine.Rendering;
 
 public partial class PostFXStack
@@ -16,6 +17,7 @@ public partial class PostFXStack
         BloomVertical,
         BloomCombine,
         BloomPrefilter,
+        BloomPrefilterflies,
     }
 
     public bool IsActive => settings != null;
@@ -94,7 +96,7 @@ public partial class PostFXStack
         
         RenderTextureFormat format = useHDR ? RenderTextureFormat.DefaultHDR : RenderTextureFormat.Default;
         buffer.GetTemporaryRT(bloomPrefilterId,width,height,0,FilterMode.Bilinear,format);
-        Draw(sourceId,bloomPrefilterId,Pass.BloomPrefilter);
+        Draw(sourceId,bloomPrefilterId, bloom.fadeFireflies? Pass.BloomPrefilterflies : Pass.BloomPrefilter);
         width /= 2;
         height /= 2;
       

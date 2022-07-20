@@ -129,4 +129,24 @@ float4 BloomPrefilterPassFragment(Varyings input) :SV_TARGET
     return float4(color ,1.0);
 }
 
+float4 BloomPrefilterFireFliesPassFragment(Varyings input) :SV_TARGET
+{
+    float3 color = 0.0;
+    float2 offsets[] = 
+    {
+        float2(0.0,0.0),
+        float2(-1.0,-1.0),float2(-1.0,1.0),float2(1.0,-1.0),float2(1.0,1.0),
+        float2(-1.0,0.0),float2(1.0,0.0),float2(0.0,-1.0),float2(0.0,1.0),
+    };
+    for(int i = 0 ; i < 9 ; i ++ ) 
+    {
+        float3 c = GetSource(input.screenUV + offsets[i] * GetSourceTexelSize().xy * 2.0).rgb;
+        c = ApplyBloomThreshold(c);
+        color += c;
+    }
+    
+    color *= 1.0 / 9.0;
+    return float4 (color ,1.0);
+}
+
 #endif
