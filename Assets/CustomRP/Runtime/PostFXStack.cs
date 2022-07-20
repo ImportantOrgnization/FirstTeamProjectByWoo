@@ -15,6 +15,7 @@ public partial class PostFXStack
         BloomHorizontal,
         BloomVertical,
         BloomCombine,
+        BloomPrefilter,
     }
 
     public bool IsActive => settings != null;
@@ -26,7 +27,8 @@ public partial class PostFXStack
     private int fxSourceId = Shader.PropertyToID("_PostFXSource");         //用于降采样和高斯模糊以及后面的combine
     private int fxSource2Id = Shader.PropertyToID("_PostFXSource2");       //用于bloom combine
     private int bloomPrefilterId = Shader.PropertyToID("_BloomPrefilter"); //预滤波纹理
-
+    private int bloomThresholdId = Shader.PropertyToID("_BloomThreshold");   
+    
     private const int maxBloomPyramidLevels = 16;
     //纹理标识符
     private int bloomPyramidId;
@@ -78,14 +80,22 @@ public partial class PostFXStack
             buffer.EndSample("Bloom");
             return;
         }
+
+        Vector4 threshold; //( t , -t + tk ,2tk , 1 / (4tk + 0.00001))
+        threshold.x = Mathf.GammaToLinearSpace(bloom.threshold);
+        threshold.y = threshold.x * bloom.thresholdKnee;
+        threshold.z = 2f * threshold.y;
+        threshold.w = 0.25f / (threshold.y + 0.00001f);
+        threshold.y -= threshold.x;
+        buffer.SetGlobalVector(bloomThresholdId,threshold);
         
         RenderTextureFormat format = RenderTextureFormat.Default;
         buffer.GetTemporaryRT(bloomPrefilterId,width,height,0,FilterMode.Bilinear,format);
-        Draw(sourceId,bloomPrefilterId,Pass.Copy);
+        Draw(sourceId,bloomPrefilterId,Pass.BloomPrefilter);
         width /= 2;
         height /= 2;
       
-        int fromId = sourceId;
+        int fromId = bloomPrefilterId;
         int toId = bloomPyramidId + 1;
         
         int i;

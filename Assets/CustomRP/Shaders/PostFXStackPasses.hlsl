@@ -38,12 +38,6 @@ float4 GetSource2(float2 screenUV)
     return SAMPLE_TEXTURE2D_LOD(_PostFXSource2,sampler_linear_clamp,screenUV,0);
 }
 
-float4 CopyPassFragment(Varyings input) : SV_TARGET
-{
-    return GetSource(input.screenUV);
-}
-
-
 float4 _PostFXSource_TexelSize; // TexName_TexelSize => (1/width,1/height,width,height) 这种申明方式会自动计算这个向量
 
 float4 GetSourceTexelSize()
@@ -56,6 +50,27 @@ float4 GetSourceBiCubic(float2 screenUV)
     return SampleTexture2DBicubic(TEXTURE2D_ARGS(_PostFXSource,sampler_linear_clamp),screenUV,_PostFXSource_TexelSize.zwxy,1.0,0.0);
 }
 
+float4 _BloomThreshold;  //( t , -t + tk ,2tk , 1 / (4tk + 0.00001))
+
+float3 ApplyBloomThreshold(float3 color)
+{
+    float brightness = Max3(color.r, color.g,color.b);
+    float soft = brightness + _BloomThreshold.y;        //s = min(max(0,b - t + tk),2tk)^2 / (4tk + 0.00001)
+    soft = clamp(soft,0.0,_BloomThreshold.z);
+    soft = soft * soft * _BloomThreshold.w;
+    
+    float contribution = max(soft,brightness - _BloomThreshold.x);  //weight = max (s , b - t ) / max(b , 0.00001)
+    contribution /= max(brightness ,0.00001);
+    return color * contribution;
+}
+
+//Copy Pass
+float4 CopyPassFragment(Varyings input) : SV_TARGET
+{
+    return GetSource(input.screenUV);
+}
+
+//Bloom Horizontal Pass
 float4 BloomHorizontalPassFragment(Varyings input) : SV_TARGET
 {
     float3 color = 0.0;
@@ -73,6 +88,7 @@ float4 BloomHorizontalPassFragment(Varyings input) : SV_TARGET
     return float4(color,1.0);
 }
 
+//Bloom Vertical Pass
 float4 BloomVerticalPassFragment(Varyings input) : SV_TARGET
 {
     float3 color = 0.0;
@@ -89,6 +105,7 @@ float4 BloomVerticalPassFragment(Varyings input) : SV_TARGET
     return float4(color,1.0);
 }
 
+//Bloom Combine Pass
 float4 BloomCombinePassFragment(Varyings input) : SV_TARGET
 {
     float3 lowRes;
@@ -105,5 +122,11 @@ float4 BloomCombinePassFragment(Varyings input) : SV_TARGET
     return float4(lowRes + highRes , 1.0);
 }
 
+//Bloom Prefilter Pass  提取高亮
+float4 BloomPrefilterPassFragment(Varyings input) :SV_TARGET
+{
+    float3 color = ApplyBloomThreshold(GetSource(input.screenUV).rgb);
+    return float4(color ,1.0);
+}
 
 #endif
