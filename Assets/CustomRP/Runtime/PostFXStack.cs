@@ -127,10 +127,11 @@ public partial class PostFXStack
         //Draw(fromId,BuiltinRenderTextureType.CameraTarget,Pass.BloomHorizontal);
         buffer.SetGlobalFloat(bloomBicubicUpsamplingId, bloom.bicubicUpsampling ? 1f : 0f);
         Pass combinePass;
+        float finalIntensity;
         if (bloom.mode == PostFXSettings.BloomSettings.Mode.Additive)
         {
             combinePass = Pass.BloomAdd;
-            buffer.SetGlobalFloat(bloomIntensityId,1f);
+            finalIntensity = bloom.intensity;
         }
         else
         {
