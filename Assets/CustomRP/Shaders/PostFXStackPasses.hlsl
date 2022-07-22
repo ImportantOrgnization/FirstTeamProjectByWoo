@@ -2,6 +2,8 @@
 #define CUSTOM_POST_FX_PASSES_INCLUDED
 
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Filtering.hlsl"
+#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Color.hlsl"
+
 bool _BloomBicubicUpsampling;   //将双三次滤波上采样选项作为可选项
 float _BloomIntensity;
 TEXTURE2D(_PostFXSource);
@@ -132,6 +134,7 @@ float4 BloomPrefilterPassFragment(Varyings input) :SV_TARGET
 float4 BloomPrefilterFireFliesPassFragment(Varyings input) :SV_TARGET
 {
     float3 color = 0.0;
+    float weightSum = 0.0;
     float2 offsets[] = 
     {
         float2(0.0,0.0),
@@ -142,10 +145,12 @@ float4 BloomPrefilterFireFliesPassFragment(Varyings input) :SV_TARGET
     {
         float3 c = GetSource(input.screenUV + offsets[i] * GetSourceTexelSize().xy * 2.0).rgb;
         c = ApplyBloomThreshold(c);
-        color += c;
+        float w = 1.0 / (Luminance(c) + 1.0);   
+        color += c * w;
+        weightSum += w;
     }
     
-    color *= 1.0 / 9.0;
+    color /= weightSum;     //完全根治萤火虫现象，原理 Sum( color * weight) / weightSum , 其中 weight = 1 / ( Luminance(color) + 1 ) 
     return float4 (color ,1.0);
 }
 
