@@ -23,6 +23,10 @@ public class PostFXSettings : ScriptableObject
     [Serializable]
     public struct BloomSettings
     {
+        public enum Mode{Additive,Scattring,}
+        public Mode mode;
+        [Range(0f, 1f)] public float scatter;
+        
         [Range(0f, 16f)] public int maxIterations;
         [Min(1f)] public int downscaleLimit;
         public bool bicubicUpsampling;

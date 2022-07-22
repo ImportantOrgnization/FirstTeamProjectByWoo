@@ -15,7 +15,8 @@ public partial class PostFXStack
         Copy,
         BloomHorizontal,
         BloomVertical,
-        BloomCombine,
+        BloomAdd,
+        BloomScatter,
         BloomPrefilter,
         BloomPrefilterflies,
     }
@@ -125,7 +126,18 @@ public partial class PostFXStack
         //将最后一级纹理图像数据拷贝到相机的渲染目标中
         //Draw(fromId,BuiltinRenderTextureType.CameraTarget,Pass.BloomHorizontal);
         buffer.SetGlobalFloat(bloomBicubicUpsamplingId, bloom.bicubicUpsampling ? 1f : 0f);
-        buffer.SetGlobalFloat(bloomIntensityId,1f);
+        Pass combinePass;
+        if (bloom.mode == PostFXSettings.BloomSettings.Mode.Additive)
+        {
+            combinePass = Pass.BloomAdd;
+            buffer.SetGlobalFloat(bloomIntensityId,1f);
+        }
+        else
+        {
+            combinePass = Pass.BloomScatter;
+            buffer.SetGlobalFloat(bloomIntensityId,bloom.scatter);
+        }
+        
         if (i > 1 )
         {
             
@@ -135,7 +147,7 @@ public partial class PostFXStack
             for (i -= 1; i > 0; i--)
             {
                 buffer.SetGlobalTexture(fxSource2Id,toId +1);
-                Draw(fromId,toId,Pass.BloomCombine);
+                Draw(fromId,toId,combinePass);
             
                 buffer.ReleaseTemporaryRT(fromId);
                 buffer.ReleaseTemporaryRT(toId +1 );
@@ -149,7 +161,7 @@ public partial class PostFXStack
         }
         buffer.SetGlobalFloat(bloomIntensityId,bloom.intensity);
         buffer.SetGlobalTexture(fxSource2Id,sourceId);    //sourceId = 自定义缓冲纹理 , formId = 经历了降采样模糊 以及 叠加操作后的间接纹理
-        Draw(fromId,BuiltinRenderTextureType.CameraTarget,Pass.BloomCombine);    
+        Draw(fromId,BuiltinRenderTextureType.CameraTarget,Pass.BloomAdd);    //教程这里是错的，它是 combinePass
         buffer.ReleaseTemporaryRT(fromId);
         buffer.ReleaseTemporaryRT(bloomPrefilterId);
 
