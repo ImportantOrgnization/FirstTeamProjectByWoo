@@ -58,7 +58,17 @@ public partial class PostFXStack
 
     public void Render(int sourceId)
     {
-        DoBloom(sourceId);
+        
+        if (DoBloom(sourceId))
+        {
+            DoToneMapping(bloomResultId);
+            buffer.ReleaseTemporaryRT(bloomResultId);
+        }
+        else
+        {
+            DoToneMapping(sourceId);
+        }
+        
         //Draw(sourceId,BuiltinRenderTextureType.CameraTarget,Pass.Copy);
         //buffer.Blit(sourceId,BuiltinRenderTextureType.CameraTarget);    //目标设置为当前渲染相机的帧缓冲区
         context.ExecuteCommandBuffer(buffer);
@@ -73,20 +83,19 @@ public partial class PostFXStack
     }
 
     private int bloomBicubicUpsamplingId = Shader.PropertyToID("_BloomBicubicUpsampling");
-    void DoBloom(int sourceId)
+    private int bloomResultId = Shader.PropertyToID("_BloomResult");
+    bool DoBloom(int sourceId)
     {
-        buffer.BeginSample("Bloom");
         PostFXSettings.BloomSettings bloom = settings.Bloom;
         int width = camera.pixelWidth / 2, height = camera.pixelHeight / 2;
         
         //如果跳过bloom，则用CopyPass作为替代
         if (bloom.maxIterations == 0 || bloom.intensity <= 0f || height < bloom.downscaleLimit * 2 || width < bloom.downscaleLimit * 2)
         {
-            Draw(sourceId , BuiltinRenderTextureType.CameraTarget,Pass.Copy);
-            buffer.EndSample("Bloom");
-            return;
+            return false;
         }
 
+        buffer.BeginSample("Bloom");
         Vector4 threshold; //( t , -t + tk ,2tk , 1 / (4tk + 0.00001))
         threshold.x = Mathf.GammaToLinearSpace(bloom.threshold);
         threshold.y = threshold.x * bloom.thresholdKnee;
@@ -162,11 +171,19 @@ public partial class PostFXStack
         }
         buffer.SetGlobalFloat(bloomIntensityId,bloom.intensity);
         buffer.SetGlobalTexture(fxSource2Id,sourceId);    //sourceId = 自定义缓冲纹理 , formId = 经历了降采样模糊 以及 叠加操作后的间接纹理
-        Draw(fromId,BuiltinRenderTextureType.CameraTarget,Pass.BloomAdd);    //教程这里是错的，它是 combinePass
+        buffer.GetTemporaryRT(bloomResultId,camera.pixelWidth,camera.pixelHeight,0,FilterMode.Bilinear,format);        
+        Draw(fromId,bloomResultId,Pass.BloomAdd);    //教程这里是错的，它是 combinePass
         buffer.ReleaseTemporaryRT(fromId);
         buffer.ReleaseTemporaryRT(bloomPrefilterId);
 
         buffer.EndSample("Bloom");
+        return true;
     }
+
+    void DoToneMapping(int sourceId)
+    {
+        Draw(sourceId,BuiltinRenderTextureType.CameraTarget,Pass.Copy);
+    }
+    
     
 }
