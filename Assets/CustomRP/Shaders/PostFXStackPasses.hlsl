@@ -189,6 +189,14 @@ float3 ColorGradingFilter(float3 color)
     return color * _ColorFilter.rgb;
 }
 
+float3 ColorGradingHueShift(float3 color)
+{
+    color = RgbToHsv(color);
+    float hue = color.x + _ColorAdjustments.z;
+    color.x = RotateHue(hue,0.0,1.0);
+    return HsvToRgb(color);
+}
+
 //颜色分级
 float3 ColorGrade(float3 color)
 {
@@ -196,8 +204,9 @@ float3 ColorGrade(float3 color)
     color = ColorGradePostExposure(color);
     color = ColorGradingContrast(color);
     color = ColorGradingFilter(color);
-    //消除对比度调整带来的负值
+    //消除对比度调整带来的负值o
     color = max(color,0.0);
+    color = ColorGradingHueShift(color); //必须在消除负值后进行色调调整
     return color;
 }
 
