@@ -105,6 +105,16 @@
 				#pragma fragment ToneMappingNeutralPassFragment
 			ENDHLSL
 		}
+		
+		Pass {  //9
+			Name "Tone Mapping ACES"
+
+			HLSLPROGRAM
+				#pragma target 3.5
+				#pragma vertex DefaultPassVertex
+				#pragma fragment ToneMappingACESPassFragment
+			ENDHLSL
+		}
     }
    
 }

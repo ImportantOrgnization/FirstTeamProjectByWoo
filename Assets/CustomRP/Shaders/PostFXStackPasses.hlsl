@@ -185,5 +185,12 @@ float4 ToneMappingNeutralPassFragment(Varyings input) : SV_TARGET{
 	return color;
 }
 
+//ACES 色调映射
+float4 ToneMappingACESPassFragment(Varyings input) : SV_TARGET{
+	float4 color = GetSource(input.screenUV);
+	color.rgb = min(color.rgb, 60.0);
+	color.rgb = AcesTonemap(unity_to_ACES(color.rgb));
+	return color;
+}
 
 #endif
