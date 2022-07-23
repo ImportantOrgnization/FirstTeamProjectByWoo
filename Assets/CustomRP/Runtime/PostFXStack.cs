@@ -185,7 +185,7 @@ public partial class PostFXStack
     void DoToneMapping(int sourceId)
     {
         PostFXSettings.ToneMappingSettings.Mode mode = settings.ToneMapping.mode;
-        Pass pass = mode < 0 ? Pass.Copy : Pass.ToneMappingReinhard;
+        Pass pass = mode < 0 ? Pass.Copy : Pass.ToneMappingReinhard + (int) mode;
         Draw(sourceId,BuiltinRenderTextureType.CameraTarget,pass);
     }
     

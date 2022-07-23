@@ -177,5 +177,13 @@ float4 ToneMappingReinhardPassFragment(Varyings input) : SV_TARGET{
 	return color;
 }
 
+//Neutral 色调映射
+float4 ToneMappingNeutralPassFragment(Varyings input) : SV_TARGET{
+	float4 color = GetSource(input.screenUV);
+	color.rgb = min(color.rgb, 60.0);
+	color.rgb = NeutralTonemap(color.rgb);
+	return color;
+}
+
 
 #endif

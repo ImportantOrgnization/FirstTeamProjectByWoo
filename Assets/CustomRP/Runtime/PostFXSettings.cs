@@ -53,6 +53,7 @@ public class PostFXSettings : ScriptableObject
         {
             None = -1,
             Reinhard ,
+            Neutral,
         };
 
         public Mode mode;
