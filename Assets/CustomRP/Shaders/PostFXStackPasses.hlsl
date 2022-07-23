@@ -177,11 +177,21 @@ float3 ColorGradePostExposure (float3 color)
     return color * _ColorAdjustments.x;
 }
 
+float3 ColorGradingContrast(float3 color)
+{
+    color = LinearToLogC(color);    //从线性空间转换到LogC空间
+    color = (color - ACEScc_MIDGRAY) * _ColorAdjustments.y + ACEScc_MIDGRAY; // ACEScc_MIDGRAY = 0.4135884
+    return LogCToLinear(color);
+}
+
 //颜色分级
 float3 ColorGrade(float3 color)
 {
     color = min(color,60.0);
     color = ColorGradePostExposure(color);
+    color = ColorGradingContrast(color);
+    //消除对比度调整带来的负值
+    color = max(color,0.0);
     return color;
 }
 
