@@ -1,6 +1,7 @@
 ﻿using UnityEditor.Build.Reporting;
 using UnityEngine;
 using UnityEngine.Rendering;
+using static PostFXSettings;
 
 public partial class PostFXStack
 {
@@ -65,12 +66,12 @@ public partial class PostFXStack
         
         if (DoBloom(sourceId))
         {
-            DoToneMapping(bloomResultId);
+            DoColorGradingAndToneMapping(bloomResultId);
             buffer.ReleaseTemporaryRT(bloomResultId);
         }
         else
         {
-            DoToneMapping(sourceId);
+            DoColorGradingAndToneMapping(sourceId);
         }
         
         //Draw(sourceId,BuiltinRenderTextureType.CameraTarget,Pass.Copy);
@@ -184,9 +185,26 @@ public partial class PostFXStack
         return true;
     }
 
-    void DoToneMapping(int sourceId)
+    private int colorAdjustmentsId = Shader.PropertyToID("_ColorAdjustments");
+    private int colorFilterId = Shader.PropertyToID("_ColorFilter");
+    
+    //获取颜色调整配置
+    void ConfigureColorAdjustments()
     {
-        PostFXSettings.ToneMappingSettings.Mode mode = settings.ToneMapping.mode;
+        ColorAdjustmentsSettings colorAdjustments = settings.ColorAdjustments;
+        buffer.SetGlobalVector(colorAdjustmentsId,new Vector4(
+            Mathf.Pow(2f,colorAdjustments.postExposure),    //2 ^ postExpoure
+            colorAdjustments.contrast * 0.01f + 1f,    //[0,2]
+            colorAdjustments.hueShift * (1f / 360f),   //[-0.5,0.5]
+            colorAdjustments.saturation * 0.01f + 1f    //[0,2]
+            ));
+        buffer.SetGlobalColor(colorFilterId,colorAdjustments.colorFilter.linear);
+    }
+    
+    void DoColorGradingAndToneMapping(int sourceId)
+    {
+        ConfigureColorAdjustments();
+        ToneMappingSettings.Mode mode = settings.ToneMapping.mode;
         Pass pass = mode < 0 ? Pass.Copy : Pass.ToneMappingNone + (int) mode;
         Draw(sourceId,BuiltinRenderTextureType.CameraTarget,pass);
     }

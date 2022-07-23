@@ -63,4 +63,26 @@ public class PostFXSettings : ScriptableObject
     [SerializeField] private ToneMappingSettings toneMapping = default;
     public ToneMappingSettings ToneMapping => toneMapping;
 
+    [Serializable]
+    public struct ColorAdjustmentsSettings
+    {
+        //后曝光，调整场景的整体曝光度
+        public float postExposure;
+        //对比度，扩大或缩小色调值的总体范围
+        [Range(-100f, 100f)] public float contrast;
+        //颜色滤镜，通过乘以颜色来给渲染器着色
+        [ColorUsage(false, true)] public Color colorFilter;
+        //色调偏移,改变所有颜色的色调
+        [Range(-180f, 180f)] public float hueShift;
+        //饱和度,推动所有颜色的强度
+        [Range(-100f, 100f)] public float saturation;
+    }
+
+    [SerializeField] private ColorAdjustmentsSettings colorAdjustments = new ColorAdjustmentsSettings()
+    {
+        colorFilter = Color.white
+    };
+
+    public ColorAdjustmentsSettings ColorAdjustments => colorAdjustments;
+    
 }
