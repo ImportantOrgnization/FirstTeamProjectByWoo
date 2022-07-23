@@ -200,10 +200,19 @@ public partial class PostFXStack
             ));
         buffer.SetGlobalColor(colorFilterId,colorAdjustments.colorFilter.linear);
     }
+
+    private int whiteBalanceId = Shader.PropertyToID("_WhiteBalance");
+
+    void ConfigureWhiteBalance()
+    {
+        WhiteBalanceSettings whiteBalance = settings.WhiteBalance;
+        buffer.SetGlobalVector(whiteBalanceId,ColorUtils.ColorBalanceToLMSCoeffs(whiteBalance.temperature,whiteBalance.tint));
+    }
     
     void DoColorGradingAndToneMapping(int sourceId)
     {
         ConfigureColorAdjustments();
+        ConfigureWhiteBalance();
         ToneMappingSettings.Mode mode = settings.ToneMapping.mode;
         Pass pass = mode < 0 ? Pass.Copy : Pass.ToneMappingNone + (int) mode;
         Draw(sourceId,BuiltinRenderTextureType.CameraTarget,pass);

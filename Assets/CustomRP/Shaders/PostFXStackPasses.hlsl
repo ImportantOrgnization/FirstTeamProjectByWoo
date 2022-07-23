@@ -203,11 +203,20 @@ float3 ColorGradingSaturation(float3 color)
     return (color - luminace)* _ColorAdjustments.w + luminace; 
 }
 
+float4 _WhiteBalance;
+float3 ColorGradeWhiteBalance(float3 color)
+{
+    color = LinearToLMS(color);
+    color *= _WhiteBalance.rgb;
+    return LMSToLinear(color);
+}
+
 //颜色分级
 float3 ColorGrade(float3 color)
 {
     color = min(color,60.0);
     color = ColorGradePostExposure(color);
+    color = ColorGradeWhiteBalance(color);
     color = ColorGradingContrast(color);
     color = ColorGradingFilter(color);
     //消除对比度调整带来的负值o

@@ -84,5 +84,18 @@ public class PostFXSettings : ScriptableObject
     };
 
     public ColorAdjustmentsSettings ColorAdjustments => colorAdjustments;
-    
+
+    [Serializable]
+    public struct WhiteBalanceSettings
+    {
+        //色温，调整白平衡的冷暖偏向
+        [Range(-100f, 100f)] public float temperature;
+        //色调，调整温度变化后的颜色
+        [Range(-100f, 100f)] public float tint;
+    }
+
+    [SerializeField]
+    private WhiteBalanceSettings whiteBalance = default;
+    public WhiteBalanceSettings WhiteBalance => whiteBalance;
+
 }
