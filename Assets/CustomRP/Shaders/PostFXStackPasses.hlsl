@@ -197,6 +197,12 @@ float3 ColorGradingHueShift(float3 color)
     return HsvToRgb(color);
 }
 
+float3 ColorGradingSaturation(float3 color)
+{   
+    float luminace = Luminance(color);
+    return (color - luminace)* _ColorAdjustments.w + luminace; 
+}
+
 //颜色分级
 float3 ColorGrade(float3 color)
 {
@@ -207,6 +213,8 @@ float3 ColorGrade(float3 color)
     //消除对比度调整带来的负值o
     color = max(color,0.0);
     color = ColorGradingHueShift(color); //必须在消除负值后进行色调调整
+    color = ColorGradingSaturation(color);
+    color = max(color,0.0);
     return color;
 }
 
