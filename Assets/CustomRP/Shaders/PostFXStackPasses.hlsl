@@ -184,12 +184,18 @@ float3 ColorGradingContrast(float3 color)
     return LogCToLinear(color);
 }
 
+float3 ColorGradingFilter(float3 color)
+{
+    return color * _ColorFilter.rgb;
+}
+
 //颜色分级
 float3 ColorGrade(float3 color)
 {
     color = min(color,60.0);
     color = ColorGradePostExposure(color);
     color = ColorGradingContrast(color);
+    color = ColorGradingFilter(color);
     //消除对比度调整带来的负值
     color = max(color,0.0);
     return color;
