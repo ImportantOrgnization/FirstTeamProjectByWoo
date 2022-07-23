@@ -19,6 +19,8 @@ public partial class PostFXStack
         BloomScatter,
         BloomPrefilter,
         BloomPrefilterflies,
+        ToneMappingReinhard,
+        
     }
 
     public bool IsActive => settings != null;
@@ -182,7 +184,9 @@ public partial class PostFXStack
 
     void DoToneMapping(int sourceId)
     {
-        Draw(sourceId,BuiltinRenderTextureType.CameraTarget,Pass.Copy);
+        PostFXSettings.ToneMappingSettings.Mode mode = settings.ToneMapping.mode;
+        Pass pass = mode < 0 ? Pass.Copy : Pass.ToneMappingReinhard;
+        Draw(sourceId,BuiltinRenderTextureType.CameraTarget,pass);
     }
     
     

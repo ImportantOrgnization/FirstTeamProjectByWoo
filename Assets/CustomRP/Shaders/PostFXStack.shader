@@ -15,7 +15,7 @@
         #include"PostFXStackPasses.hlsl"
         ENDHLSL
 
-        Pass
+        Pass    //0
         {
 		   Name "Copy"
            HLSLPROGRAM
@@ -25,7 +25,7 @@
            ENDHLSL
         }
         
-        Pass
+        Pass    //1
         {
             Name "Bloom Horizontal"
             HLSLPROGRAM
@@ -35,7 +35,7 @@
             ENDHLSL
         }
         
-        Pass
+        Pass    //2
         {
             Name "Bloom Vertical"
             HLSLPROGRAM
@@ -45,7 +45,7 @@
             ENDHLSL
         }
         
-        Pass
+        Pass    //3
         {
             Name "Bloom Add"
             HLSLPROGRAM
@@ -55,7 +55,7 @@
             ENDHLSL
         }
         
-         Pass
+         Pass   //4
         {
             Name "Bloom Scatter"
             HLSLPROGRAM
@@ -65,7 +65,7 @@
             ENDHLSL
         }
        
-        Pass
+        Pass    //5
         {
             Name "Bloom Prefilter"
             HLSLPROGRAM
@@ -75,7 +75,7 @@
             ENDHLSL
         }
         
-         Pass
+        Pass    //6
         {
             Name "Bloom Prefilter Fireflies"
             HLSLPROGRAM
@@ -84,6 +84,17 @@
             #pragma fragment BloomPrefilterFireFliesPassFragment
             ENDHLSL
         }
+        
+		Pass    //7 
+		{
+			Name "Tone Mapping Reinhard"
+
+			HLSLPROGRAM
+				#pragma target 3.5
+				#pragma vertex DefaultPassVertex
+				#pragma fragment ToneMappingReinhardPassFragment
+			ENDHLSL
+		}
     }
    
 }

@@ -169,4 +169,13 @@ float4 BloomPrefilterFireFliesPassFragment(Varyings input) :SV_TARGET
     return float4 (color ,1.0);
 }
 
+//Reinhard 色调映射
+float4 ToneMappingReinhardPassFragment(Varyings input) : SV_TARGET{
+	float4 color = GetSource(input.screenUV);
+	color.rgb = min(color.rgb, 60.0);
+	color.rgb /= color.rgb + 1.0;
+	return color;
+}
+
+
 #endif
