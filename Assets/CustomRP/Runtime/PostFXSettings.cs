@@ -51,7 +51,7 @@ public class PostFXSettings : ScriptableObject
     {
         public enum Mode
         {
-            None = -1,
+            None,
             Reinhard ,    //比较暗
             Neutral,    //中性色调
             ACES,    //Academy Color Encoding System 标准的电影效果

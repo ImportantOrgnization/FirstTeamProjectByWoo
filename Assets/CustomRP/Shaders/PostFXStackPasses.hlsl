@@ -169,10 +169,25 @@ float4 BloomPrefilterFireFliesPassFragment(Varyings input) :SV_TARGET
     return float4 (color ,1.0);
 }
 
+//颜色分级
+float3 ColorGrade(float3 color)
+{
+    color = min(color,60.0);
+    return color;
+}
+
+//不进行色调映射
+float4 ToneMappingNonePassFragment(Varyings input) : SV_TARGET
+{
+    float4 color = GetSource(input.screenUV);
+    color.rgb = ColorGrade(color.rgb);
+    return color;
+}
+
 //Reinhard 色调映射
 float4 ToneMappingReinhardPassFragment(Varyings input) : SV_TARGET{
 	float4 color = GetSource(input.screenUV);
-	color.rgb = min(color.rgb, 60.0);
+	color.rgb = ColorGrade(color.rgb);
 	color.rgb /= color.rgb + 1.0;
 	return color;
 }
@@ -180,7 +195,7 @@ float4 ToneMappingReinhardPassFragment(Varyings input) : SV_TARGET{
 //Neutral 色调映射
 float4 ToneMappingNeutralPassFragment(Varyings input) : SV_TARGET{
 	float4 color = GetSource(input.screenUV);
-	color.rgb = min(color.rgb, 60.0);
+	color.rgb = ColorGrade(color.rgb);
 	color.rgb = NeutralTonemap(color.rgb);
 	return color;
 }
@@ -188,7 +203,7 @@ float4 ToneMappingNeutralPassFragment(Varyings input) : SV_TARGET{
 //ACES 色调映射
 float4 ToneMappingACESPassFragment(Varyings input) : SV_TARGET{
 	float4 color = GetSource(input.screenUV);
-	color.rgb = min(color.rgb, 60.0);
+	color.rgb = ColorGrade(color.rgb);
 	color.rgb = AcesTonemap(unity_to_ACES(color.rgb));
 	return color;
 }
