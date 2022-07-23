@@ -169,10 +169,19 @@ float4 BloomPrefilterFireFliesPassFragment(Varyings input) :SV_TARGET
     return float4 (color ,1.0);
 }
 
+float4 _ColorAdjustments;
+float4 _ColorFilter;
+
+float3 ColorGradePostExposure (float3 color)
+{
+    return color * _ColorAdjustments.x;
+}
+
 //颜色分级
 float3 ColorGrade(float3 color)
 {
     color = min(color,60.0);
+    color = ColorGradePostExposure(color);
     return color;
 }
 
