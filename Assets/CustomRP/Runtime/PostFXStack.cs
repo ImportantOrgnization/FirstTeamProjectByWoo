@@ -24,6 +24,7 @@ public partial class PostFXStack
         ColorGradingReinhard,
         ColorGradingNeutral,
         ColorGradingACES,
+        Final,
     }
 
     public bool IsActive => settings != null;
@@ -269,7 +270,8 @@ public partial class PostFXStack
         //Draw(sourceId,BuiltinRenderTextureType.CameraTarget,pass);
         buffer.SetGlobalFloat(colorGradingLUTInLogId,useHDR && pass != Pass.ColorGradingNone ? 1f:0f);
         Draw(sourceId,colorGradingLUTId,pass);
-        Draw(sourceId,BuiltinRenderTextureType.CameraTarget,Pass.Copy);
+        buffer.SetGlobalVector(colorGradingLUTParameterId,new Vector4(1f/lutWidth,1f/lutHeight,lutHeight - 1f));
+        Draw(sourceId,BuiltinRenderTextureType.CameraTarget,Pass.Final);
         buffer.ReleaseTemporaryRT(colorGradingLUTId);
     }
     
