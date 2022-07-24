@@ -211,6 +211,20 @@ float3 ColorGradeWhiteBalance(float3 color)
     return LMSToLinear(color);
 }
 
+float4 _SplitToningShadows;
+float4 _SplitToningHighlights;
+//色调分离
+float3 ColorGradeSplitToning(float3 color)
+{
+    color = PositivePow(color,1.0/2.2);
+    float t = saturate(Luminance(saturate(color)) + _SplitToningShadows.w);
+    float3 shadows = lerp(0.5,_SplitToningShadows.rgb , 1.0 - t);
+    float3 highlights = lerp(0.5,_SplitToningHighlights.rgb,t);
+    color = SoftLight(color, shadows);
+	color = SoftLight(color, highlights);
+    return PositivePow(color,2.2);
+}
+
 //颜色分级
 float3 ColorGrade(float3 color)
 {
@@ -221,6 +235,7 @@ float3 ColorGrade(float3 color)
     color = ColorGradingFilter(color);
     //消除对比度调整带来的负值o
     color = max(color,0.0);
+    color = ColorGradeSplitToning(color);
     color = ColorGradingHueShift(color); //必须在消除负值后进行色调调整
     color = ColorGradingSaturation(color);
     color = max(color,0.0);

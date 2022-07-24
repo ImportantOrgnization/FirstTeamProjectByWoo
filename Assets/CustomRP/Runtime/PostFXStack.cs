@@ -208,11 +208,24 @@ public partial class PostFXStack
         WhiteBalanceSettings whiteBalance = settings.WhiteBalance;
         buffer.SetGlobalVector(whiteBalanceId,ColorUtils.ColorBalanceToLMSCoeffs(whiteBalance.temperature,whiteBalance.tint));
     }
+
+    private int splitToningShadowsId = Shader.PropertyToID("_SplitToningShadows");
+    private int splitToningHighlightsId = Shader.PropertyToID("_SplitToningHighlights");
+
+    void ConfigureSplitToning()
+    {
+        SplitToningSettings splitToning = settings.SplitToning;
+        Color splitColor = splitToning.shadows;
+        splitColor.a = splitToning.balance * 0.01f;
+        buffer.SetGlobalColor(splitToningShadowsId,splitColor);
+        buffer.SetGlobalColor(splitToningHighlightsId,splitToning.highlights);
+    }
     
     void DoColorGradingAndToneMapping(int sourceId)
     {
         ConfigureColorAdjustments();
         ConfigureWhiteBalance();
+        ConfigureSplitToning();
         ToneMappingSettings.Mode mode = settings.ToneMapping.mode;
         Pass pass = mode < 0 ? Pass.Copy : Pass.ToneMappingNone + (int) mode;
         Draw(sourceId,BuiltinRenderTextureType.CameraTarget,pass);
