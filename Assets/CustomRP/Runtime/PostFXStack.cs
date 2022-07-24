@@ -20,10 +20,10 @@ public partial class PostFXStack
         BloomScatter,
         BloomPrefilter,
         BloomPrefilterflies,
-        ToneMappingNone,
-        ToneMappingReinhard,
-        ToneMappingNeutral,
-        ToneMappingACES,
+        ColorGradingNone,
+        ColorGradingReinhard,
+        ColorGradingNeutral,
+        ColorGradingACES,
     }
 
     public bool IsActive => settings != null;
@@ -248,7 +248,8 @@ public partial class PostFXStack
         buffer.SetGlobalColor(smhHighlightsId,smh.highLights.linear);
         buffer.SetGlobalVector(smhRangeId,new Vector4(smh.shadowStart,smh.shadowEnd,smh.highlightsStart,smh.highlightsEnd));
     }
-    
+
+    private int colorGradingLUTId = Shader.PropertyToID("_ColorGradingLUT");
     void DoColorGradingAndToneMapping(int sourceId)
     {
         ConfigureColorAdjustments();
@@ -256,9 +257,16 @@ public partial class PostFXStack
         ConfigureSplitToning();
         ConfigureChannelMixer();
         ConfigureShadowMidtonesHighlights();
+        int lutHeight = colorLUTResolution;
+        int lutWidth = lutHeight * lutHeight;
+        buffer.GetTemporaryRT(colorGradingLUTId,lutWidth,lutHeight,0,FilterMode.Bilinear,RenderTextureFormat.DefaultHDR);
         ToneMappingSettings.Mode mode = settings.ToneMapping.mode;
-        Pass pass = mode < 0 ? Pass.Copy : Pass.ToneMappingNone + (int) mode;
-        Draw(sourceId,BuiltinRenderTextureType.CameraTarget,pass);
+        //Pass pass = mode < 0 ? Pass.Copy : Pass.ColorGradingNone + (int) mode;
+        Pass pass = Pass.ColorGradingNone + (int) mode;
+        //Draw(sourceId,BuiltinRenderTextureType.CameraTarget,pass);
+        Draw(sourceId,colorGradingLUTId,pass);
+        Draw(sourceId,BuiltinRenderTextureType.CameraTarget,Pass.Copy);
+        buffer.ReleaseTemporaryRT(colorGradingLUTId);
     }
     
     
