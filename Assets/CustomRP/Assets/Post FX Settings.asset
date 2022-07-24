@@ -24,7 +24,7 @@ MonoBehaviour:
     intensity: 1.5
     fadeFireflies: 1
   toneMapping:
-    mode: 0
+    mode: 3
   colorAdjustments:
     postExposure: 0
     contrast: -2.1
@@ -43,9 +43,9 @@ MonoBehaviour:
     green: {x: 0, y: 1, z: 0.333}
     blue: {x: 0, y: 0, z: 0.333}
   shadowsMidtonesHighlights:
-    shadows: {r: 0, g: 1, b: 0.09638786, a: 1}
-    midtones: {r: 0, g: 0.015137911, b: 1, a: 1}
-    highLights: {r: 1, g: 0, b: 0.74001884, a: 1}
+    shadows: {r: 1, g: 1, b: 1, a: 1}
+    midtones: {r: 1, g: 1, b: 1, a: 1}
+    highLights: {r: 1, g: 1, b: 1, a: 1}
     shadowStart: 0
     shadowEnd: 0.3
     highlightsStart: 0.55

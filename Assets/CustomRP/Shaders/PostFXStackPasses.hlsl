@@ -177,11 +177,18 @@ float3 ColorGradePostExposure (float3 color)
     return color * _ColorAdjustments.x;
 }
 
-float3 ColorGradingContrast(float3 color)
+float Luminance(float3 color , bool useACES)
 {
-    color = LinearToLogC(color);    //从线性空间转换到LogC空间
+    return useACES ? AcesLuminance(color) : Luminance(color);
+}
+
+float3 ColorGradingContrast(float3 color,bool useACES)
+{
+    color = useACES ? ACES_to_ACEScc(unity_to_ACES(color)) : LinearToLogC(color);
+    //color = LinearToLogC(color);    //从线性空间转换到LogC空间
     color = (color - ACEScc_MIDGRAY) * _ColorAdjustments.y + ACEScc_MIDGRAY; // ACEScc_MIDGRAY = 0.4135884
-    return LogCToLinear(color);
+    return useACES ? ACES_to_ACEScg(ACEScc_to_ACES(color)) : LogCToLinear(color);
+    //return LogCToLinear(color);
 }
 
 float3 ColorGradingFilter(float3 color)
@@ -197,9 +204,9 @@ float3 ColorGradingHueShift(float3 color)
     return HsvToRgb(color);
 }
 
-float3 ColorGradingSaturation(float3 color)
+float3 ColorGradingSaturation(float3 color,bool useACES)
 {   
-    float luminace = Luminance(color);
+    float luminace = Luminance(color,useACES);
     return (color - luminace)* _ColorAdjustments.w + luminace; 
 }
 
@@ -214,10 +221,10 @@ float3 ColorGradeWhiteBalance(float3 color)
 float4 _SplitToningShadows;
 float4 _SplitToningHighlights;
 //色调分离
-float3 ColorGradeSplitToning(float3 color)
+float3 ColorGradeSplitToning(float3 color,bool useACES)
 {
     color = PositivePow(color,1.0/2.2);
-    float t = saturate(Luminance(saturate(color)) + _SplitToningShadows.w);
+    float t = saturate(Luminance(saturate(color),useACES) + _SplitToningShadows.w);
     float3 shadows = lerp(0.5,_SplitToningShadows.rgb , 1.0 - t);
     float3 highlights = lerp(0.5,_SplitToningHighlights.rgb,t);
     color = SoftLight(color, shadows);
@@ -237,9 +244,9 @@ float4 _SMHShadows;
 float4 _SMHMidtones;
 float4 _SMHHighlights;
 float4 _SMHRange;
-float3 ColorGradingShadowsMidtonesHighlights(float3 color)
+float3 ColorGradingShadowsMidtonesHighlights(float3 color,bool useACES)
 {
-    float luminace = Luminance(color);
+    float luminace = Luminance(color,useACES);
     float shadowsWeight = 1.0 - smoothstep(_SMHRange.x , _SMHRange.y , luminace);
     float highlightsWeight = smoothstep(_SMHRange.z,_SMHRange.w ,luminace);
     float midtonesWeight = 1.0 - shadowsWeight - highlightsWeight;
@@ -249,22 +256,22 @@ float3 ColorGradingShadowsMidtonesHighlights(float3 color)
 }
 
 //颜色分级
-float3 ColorGrade(float3 color)
+float3 ColorGrade(float3 color,bool useACES = false)
 {
     color = min(color,60.0);
-    color = ColorGradePostExposure(color);
-    color = ColorGradeWhiteBalance(color);
-    color = ColorGradingContrast(color);
+    color = ColorGradePostExposure(color);  //线性空间
+    color = ColorGradeWhiteBalance(color);  //线性空间
+    color = ColorGradingContrast(color,useACES);
     color = ColorGradingFilter(color);
     //消除对比度调整带来的负值o
     color = max(color,0.0);
-    color = ColorGradeSplitToning(color);
+    color = ColorGradeSplitToning(color,useACES);
     color = ColorGradingChannelMixer(color);
     color = max(color,0.0);
+    color = ColorGradingShadowsMidtonesHighlights(color,useACES);
     color = ColorGradingHueShift(color); //必须在消除负值后进行色调调整
-    color = ColorGradingSaturation(color);
-    color = max(color,0.0);
-    color = ColorGradingShadowsMidtonesHighlights(color);
+    color = ColorGradingSaturation(color,useACES);
+    color = max(useACES ? ACEScg_to_ACES(color) : color , 0.0);
     return color;
 }
 
@@ -295,7 +302,7 @@ float4 ToneMappingNeutralPassFragment(Varyings input) : SV_TARGET{
 //ACES 色调映射
 float4 ToneMappingACESPassFragment(Varyings input) : SV_TARGET{
 	float4 color = GetSource(input.screenUV);
-	color.rgb = ColorGrade(color.rgb);
+	color.rgb = ColorGrade(color.rgb,true);
 	color.rgb = AcesTonemap(unity_to_ACES(color.rgb));
 	return color;
 }
