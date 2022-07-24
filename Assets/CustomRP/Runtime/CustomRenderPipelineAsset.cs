@@ -9,6 +9,11 @@ using UnityEngine.Rendering;
 [CreateAssetMenu(menuName ="Rendering/CreateCustomRenderPipeline")]
 public class CustomRenderPipelineAsset : RenderPipelineAsset
 {
+    public enum ColorLUTResolution
+    {
+        _16 = 16,_32 = 32 , _64= 64,
+    }
+    
     //设置批处理启用状态
     [SerializeField]
     bool useDynamicBatching = true, useGPUInstancing = true, useSRPBatcher = true;
@@ -25,9 +30,12 @@ public class CustomRenderPipelineAsset : RenderPipelineAsset
     //如果没有HDR，unity就会把缓冲设置为sRGB格式，这种格式的缓冲就像一个普通纹理一样，在写入缓冲前需要进行伽马矫正，在读取缓冲时需要进行一次解码操作
     [SerializeField] private bool allowHDR = true;
     
+    //LUT分辨率
+    [SerializeField] private ColorLUTResolution colorLUTResolution = ColorLUTResolution._32;
+    
     //重写抽象方法，需要返回一个RenderPipeline实例对象
     protected override RenderPipeline CreatePipeline()
     {
-        return new CustomRenderPipeline(allowHDR, useDynamicBatching, useGPUInstancing, useSRPBatcher,useLightsPerObject,shadows,postFxSettings);
+        return new CustomRenderPipeline(allowHDR, useDynamicBatching, useGPUInstancing, useSRPBatcher,useLightsPerObject,shadows,postFxSettings,(int)colorLUTResolution);
     }
 }

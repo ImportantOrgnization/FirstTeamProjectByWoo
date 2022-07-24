@@ -52,8 +52,10 @@ public partial class PostFXStack
     }
 
     private bool useHDR;
-    public void Setup(ScriptableRenderContext context, Camera camera, PostFXSettings settings,bool useHDR)
+    private int colorLUTResolution;
+    public void Setup(ScriptableRenderContext context, Camera camera, PostFXSettings settings,bool useHDR,int colorLUTResolution)
     {
+        this.colorLUTResolution = colorLUTResolution;
         this.useHDR = useHDR;
         this.context = context;
         this.camera = camera;
