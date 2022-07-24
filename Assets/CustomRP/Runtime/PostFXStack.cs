@@ -251,6 +251,7 @@ public partial class PostFXStack
 
     private int colorGradingLUTId = Shader.PropertyToID("_ColorGradingLUT");
     private int colorGradingLUTParameterId = Shader.PropertyToID("_ColorGradingLUTParameters");
+    private int colorGradingLUTInLogId = Shader.PropertyToID("_ColorGradingLUTInLogC");
     void DoColorGradingAndToneMapping(int sourceId)
     {
         ConfigureColorAdjustments();
@@ -266,6 +267,7 @@ public partial class PostFXStack
         //Pass pass = mode < 0 ? Pass.Copy : Pass.ColorGradingNone + (int) mode;
         Pass pass = Pass.ColorGradingNone + (int) mode;
         //Draw(sourceId,BuiltinRenderTextureType.CameraTarget,pass);
+        buffer.SetGlobalFloat(colorGradingLUTInLogId,useHDR && pass != Pass.ColorGradingNone ? 1f:0f);
         Draw(sourceId,colorGradingLUTId,pass);
         Draw(sourceId,BuiltinRenderTextureType.CameraTarget,Pass.Copy);
         buffer.ReleaseTemporaryRT(colorGradingLUTId);

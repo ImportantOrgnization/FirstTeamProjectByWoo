@@ -258,9 +258,9 @@ float3 ColorGradingShadowsMidtonesHighlights(float3 color,bool useACES)
 //颜色分级
 float3 ColorGrade(float3 color,bool useACES = false)
 {
-    color = min(color,60.0);
-    color = ColorGradePostExposure(color);  //线性空间
-    color = ColorGradeWhiteBalance(color);  //线性空间
+    //color = min(color,60.0);
+    color = ColorGradePostExposure(color); 
+    color = ColorGradeWhiteBalance(color); 
     color = ColorGradingContrast(color,useACES);
     color = ColorGradingFilter(color);
     //消除对比度调整带来的负值o
@@ -276,10 +276,11 @@ float3 ColorGrade(float3 color,bool useACES = false)
 }
 
 float4 _ColorGradingLUTParameters;
+float _ColorGradingLUTInLogC;
 float3 GetColorGradeLUT(float2 uv , bool useACES = false)
 {
     float3 color = GetLutStripValue(uv , _ColorGradingLUTParameters);
-    return ColorGrade(color,useACES);
+    return ColorGrade(_ColorGradingLUTInLogC ?  LogCToLinear(color) : color ,useACES);
 }
 
 //不进行色调映射
