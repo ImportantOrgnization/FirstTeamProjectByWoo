@@ -275,36 +275,39 @@ float3 ColorGrade(float3 color,bool useACES = false)
     return color;
 }
 
+float4 _ColorGradingLUTParameters;
+float3 GetColorGradeLUT(float2 uv , bool useACES = false)
+{
+    float3 color = GetLutStripValue(uv , _ColorGradingLUTParameters);
+    return ColorGrade(color,useACES);
+}
+
 //不进行色调映射
 float4 ToneMappingNonePassFragment(Varyings input) : SV_TARGET
 {
-    float4 color = GetSource(input.screenUV);
-    color.rgb = ColorGrade(color.rgb);
-    return color;
+    float3 color = GetColorGradeLUT(input.screenUV);
+    return float4(color,1.0);
 }
 
 //Reinhard 色调映射
 float4 ToneMappingReinhardPassFragment(Varyings input) : SV_TARGET{
-	float4 color = GetSource(input.screenUV);
-	color.rgb = ColorGrade(color.rgb);
-	color.rgb /= color.rgb + 1.0;
-	return color;
+	float3 color = GetColorGradeLUT(input.screenUV);
+	color /= color + 1.0;
+	return float4(color,1.0);
 }
 
 //Neutral 色调映射
 float4 ToneMappingNeutralPassFragment(Varyings input) : SV_TARGET{
-	float4 color = GetSource(input.screenUV);
-	color.rgb = ColorGrade(color.rgb);
-	color.rgb = NeutralTonemap(color.rgb);
-	return color;
+	float3 color = GetColorGradeLUT(input.screenUV);
+	color = NeutralTonemap(color);
+    return float4(color,1.0);
 }
 
 //ACES 色调映射
 float4 ToneMappingACESPassFragment(Varyings input) : SV_TARGET{
-	float4 color = GetSource(input.screenUV);
-	color.rgb = ColorGrade(color.rgb,true);
-	color.rgb = AcesTonemap(unity_to_ACES(color.rgb));
-	return color;
+	float3 color = GetColorGradeLUT(input.screenUV);
+	color = AcesTonemap(unity_to_ACES(color));
+	return float4( color,1.0);
 }
 
 #endif

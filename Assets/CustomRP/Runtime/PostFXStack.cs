@@ -250,6 +250,7 @@ public partial class PostFXStack
     }
 
     private int colorGradingLUTId = Shader.PropertyToID("_ColorGradingLUT");
+    private int colorGradingLUTParameterId = Shader.PropertyToID("_ColorGradingLUTParameters");
     void DoColorGradingAndToneMapping(int sourceId)
     {
         ConfigureColorAdjustments();
@@ -260,6 +261,7 @@ public partial class PostFXStack
         int lutHeight = colorLUTResolution;
         int lutWidth = lutHeight * lutHeight;
         buffer.GetTemporaryRT(colorGradingLUTId,lutWidth,lutHeight,0,FilterMode.Bilinear,RenderTextureFormat.DefaultHDR);
+        buffer.SetGlobalVector(colorGradingLUTParameterId,new Vector4(lutHeight,0.5f/lutWidth , 0.5f/lutHeight,lutHeight/(lutHeight - 1f)));
         ToneMappingSettings.Mode mode = settings.ToneMapping.mode;
         //Pass pass = mode < 0 ? Pass.Copy : Pass.ColorGradingNone + (int) mode;
         Pass pass = Pass.ColorGradingNone + (int) mode;
