@@ -24,7 +24,7 @@ MonoBehaviour:
     intensity: 1.5
     fadeFireflies: 1
   toneMapping:
-    mode: 0
+    mode: 3
   colorAdjustments:
     postExposure: 0
     contrast: -2.1
@@ -37,4 +37,8 @@ MonoBehaviour:
   splitToning:
     shadows: {r: 0, g: 0.10866976, b: 1, a: 1}
     highlights: {r: 1, g: 0.51855165, b: 0, a: 1}
-    balance: 13.2
+    balance: 7.8
+  channelMixer:
+    red: {x: 1, y: 0, z: 0.333}
+    green: {x: 0, y: 1, z: 0.333}
+    blue: {x: 0, y: 0, z: 0.333}

@@ -116,5 +116,19 @@ public class PostFXSettings : ScriptableObject
 
     public SplitToningSettings SplitToning => splitToning;
 
+    [Serializable]
+    public struct ChannelMixerSettings
+    {
+        public Vector3 red, green, blue;
+    }
+
+    [SerializeField] private ChannelMixerSettings channelMixer = new ChannelMixerSettings
+    {
+        red = Vector3.right,
+        green = Vector3.up,
+        blue = Vector3.forward,
+    };
+
+    public ChannelMixerSettings ChannelMixer => channelMixer;
 
 }

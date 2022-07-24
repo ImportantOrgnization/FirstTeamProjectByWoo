@@ -220,12 +220,25 @@ public partial class PostFXStack
         buffer.SetGlobalColor(splitToningShadowsId,splitColor);
         buffer.SetGlobalColor(splitToningHighlightsId,splitToning.highlights);
     }
+
+    private int channelMixerRedId = Shader.PropertyToID("_ChannelMixerRed");
+    private int channelMixerGreenId = Shader.PropertyToID("_ChannelMixerGreen");
+    private int channelMixerBlueId = Shader.PropertyToID("_ChannelMixerBlue");
+
+    void ConfigureChannelMixer()
+    {
+        ChannelMixerSettings channelMixer = settings.ChannelMixer;
+        buffer.SetGlobalVector(channelMixerRedId,channelMixer.red);
+        buffer.SetGlobalVector(channelMixerGreenId,channelMixer.green);
+        buffer.SetGlobalVector(channelMixerBlueId,channelMixer.blue);
+    }
     
     void DoColorGradingAndToneMapping(int sourceId)
     {
         ConfigureColorAdjustments();
         ConfigureWhiteBalance();
         ConfigureSplitToning();
+        ConfigureChannelMixer();
         ToneMappingSettings.Mode mode = settings.ToneMapping.mode;
         Pass pass = mode < 0 ? Pass.Copy : Pass.ToneMappingNone + (int) mode;
         Draw(sourceId,BuiltinRenderTextureType.CameraTarget,pass);

@@ -225,6 +225,14 @@ float3 ColorGradeSplitToning(float3 color)
     return PositivePow(color,2.2);
 }
 
+float4 _ChannelMixerRed;
+float4 _ChannelMixerGreen;
+float4 _ChannelMixerBlue;
+float3 ColorGradingChannelMixer(float3 color)
+{
+    return mul(float3x3(_ChannelMixerRed.rgb , _ChannelMixerGreen.rgb , _ChannelMixerBlue.rgb) , color);
+}
+
 //颜色分级
 float3 ColorGrade(float3 color)
 {
@@ -236,6 +244,7 @@ float3 ColorGrade(float3 color)
     //消除对比度调整带来的负值o
     color = max(color,0.0);
     color = ColorGradeSplitToning(color);
+    color = ColorGradingChannelMixer(color);
     color = ColorGradingHueShift(color); //必须在消除负值后进行色调调整
     color = ColorGradingSaturation(color);
     color = max(color,0.0);
