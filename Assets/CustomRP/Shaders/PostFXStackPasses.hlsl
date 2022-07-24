@@ -245,6 +245,7 @@ float3 ColorGrade(float3 color)
     color = max(color,0.0);
     color = ColorGradeSplitToning(color);
     color = ColorGradingChannelMixer(color);
+    color = max(color,0.0);
     color = ColorGradingHueShift(color); //必须在消除负值后进行色调调整
     color = ColorGradingSaturation(color);
     color = max(color,0.0);
