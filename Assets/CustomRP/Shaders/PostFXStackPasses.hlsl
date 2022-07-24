@@ -312,9 +312,11 @@ float4 ToneMappingACESPassFragment(Varyings input) : SV_TARGET{
 }
 
 TEXTURE2D(_ColorGradingLUT);
+//SAMPLER(sampler_point_clamp);
 
 float3 ApplyColorGradingLUT(float3 color)
 {
+//    return ApplyLut2D(TEXTURE2D_ARGS(_ColorGradingLUT, sampler_point_clamp),  //通过point采样可以更明显地观察到LUT的颜色条带
     return ApplyLut2D(TEXTURE2D_ARGS(_ColorGradingLUT, sampler_linear_clamp),
         saturate(_ColorGradingLUTInLogC ? LinearToLogC(color) : color),
         _ColorGradingLUTParameters.xyz);
