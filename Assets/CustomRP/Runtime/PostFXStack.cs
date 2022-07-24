@@ -232,6 +232,20 @@ public partial class PostFXStack
         buffer.SetGlobalVector(channelMixerGreenId,channelMixer.green);
         buffer.SetGlobalVector(channelMixerBlueId,channelMixer.blue);
     }
+
+    private int smhShadowsId = Shader.PropertyToID("_SMHShadows");
+    private int smhMidtonesId = Shader.PropertyToID("_SMHMidtones");
+    private int smhHighlightsId = Shader.PropertyToID("_SMHHighlights");
+    private int smhRangeId = Shader.PropertyToID("_SMHRange");
+
+    void ConfigureShadowMidtonesHighlights()
+    {
+        ShadowMidtonesHighlightsSettings smh = settings.ShadowMidtonesHighlights;
+        buffer.SetGlobalColor(smhShadowsId,smh.shadows.linear);
+        buffer.SetGlobalColor(smhMidtonesId,smh.midtones.linear);
+        buffer.SetGlobalColor(smhHighlightsId,smh.highLights.linear);
+        buffer.SetGlobalVector(smhRangeId,new Vector4(smh.shadowStart,smh.shadowEnd,smh.highlightsStart,smh.highlightsEnd));
+    }
     
     void DoColorGradingAndToneMapping(int sourceId)
     {
@@ -239,6 +253,7 @@ public partial class PostFXStack
         ConfigureWhiteBalance();
         ConfigureSplitToning();
         ConfigureChannelMixer();
+        ConfigureShadowMidtonesHighlights();
         ToneMappingSettings.Mode mode = settings.ToneMapping.mode;
         Pass pass = mode < 0 ? Pass.Copy : Pass.ToneMappingNone + (int) mode;
         Draw(sourceId,BuiltinRenderTextureType.CameraTarget,pass);

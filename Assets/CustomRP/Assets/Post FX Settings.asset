@@ -24,7 +24,7 @@ MonoBehaviour:
     intensity: 1.5
     fadeFireflies: 1
   toneMapping:
-    mode: 3
+    mode: 0
   colorAdjustments:
     postExposure: 0
     contrast: -2.1
@@ -35,10 +35,18 @@ MonoBehaviour:
     temperature: 0
     tint: 0
   splitToning:
-    shadows: {r: 0, g: 0.10866976, b: 1, a: 1}
-    highlights: {r: 1, g: 0.51855165, b: 0, a: 1}
+    shadows: {r: 0.4811321, g: 0.4811321, b: 0.4811321, a: 1}
+    highlights: {r: 0.5283019, g: 0.5283019, b: 0.5283019, a: 1}
     balance: 7.8
   channelMixer:
     red: {x: 1, y: 0, z: 0.333}
     green: {x: 0, y: 1, z: 0.333}
     blue: {x: 0, y: 0, z: 0.333}
+  shadowsMidtonesHighlights:
+    shadows: {r: 0, g: 1, b: 0.09638786, a: 1}
+    midtones: {r: 0, g: 0.015137911, b: 1, a: 1}
+    highLights: {r: 1, g: 0, b: 0.74001884, a: 1}
+    shadowStart: 0
+    shadowEnd: 0.3
+    highlightsStart: 0.55
+    highlightsEnd: 1

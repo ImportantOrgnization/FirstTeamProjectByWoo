@@ -131,4 +131,23 @@ public class PostFXSettings : ScriptableObject
 
     public ChannelMixerSettings ChannelMixer => channelMixer;
 
+    [Serializable]
+    public struct ShadowMidtonesHighlightsSettings
+    {
+        [ColorUsage(false, true)] public Color shadows, midtones, highLights;
+        [Range(0f, 2f)] public float shadowStart, shadowEnd, highlightsStart, highlightsEnd;
+    }
+
+    [SerializeField] private ShadowMidtonesHighlightsSettings shadowsMidtonesHighlights =
+        new ShadowMidtonesHighlightsSettings
+        {
+            shadows = Color.white,
+            midtones = Color.white,
+            highLights = Color.white,
+            shadowEnd = 0.3f,
+            highlightsStart = 0.55f,
+            highlightsEnd = 1f,
+        };
+
+    public ShadowMidtonesHighlightsSettings ShadowMidtonesHighlights => shadowsMidtonesHighlights;
 }

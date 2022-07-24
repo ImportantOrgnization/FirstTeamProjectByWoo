@@ -233,6 +233,21 @@ float3 ColorGradingChannelMixer(float3 color)
     return mul(float3x3(_ChannelMixerRed.rgb , _ChannelMixerGreen.rgb , _ChannelMixerBlue.rgb) , color);
 }
 
+float4 _SMHShadows;
+float4 _SMHMidtones;
+float4 _SMHHighlights;
+float4 _SMHRange;
+float3 ColorGradingShadowsMidtonesHighlights(float3 color)
+{
+    float luminace = Luminance(color);
+    float shadowsWeight = 1.0 - smoothstep(_SMHRange.x , _SMHRange.y , luminace);
+    float highlightsWeight = smoothstep(_SMHRange.z,_SMHRange.w ,luminace);
+    float midtonesWeight = 1.0 - shadowsWeight - highlightsWeight;
+    return color * _SMHShadows.rgb * shadowsWeight + 
+            color * _SMHMidtones.rgb * midtonesWeight + 
+            color * _SMHHighlights.rgb * highlightsWeight;
+}
+
 //颜色分级
 float3 ColorGrade(float3 color)
 {
@@ -249,6 +264,7 @@ float3 ColorGrade(float3 color)
     color = ColorGradingHueShift(color); //必须在消除负值后进行色调调整
     color = ColorGradingSaturation(color);
     color = max(color,0.0);
+    color = ColorGradingShadowsMidtonesHighlights(color);
     return color;
 }
 
