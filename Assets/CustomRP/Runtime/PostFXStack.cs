@@ -54,13 +54,15 @@ public partial class PostFXStack
 
     private bool useHDR;
     private int colorLUTResolution;
-    public void Setup(ScriptableRenderContext context, Camera camera, PostFXSettings settings,bool useHDR,int colorLUTResolution)
+    private CameraSettings.FinalBlendMode finalBlendMode;
+    public void Setup(ScriptableRenderContext context, Camera camera, PostFXSettings settings,bool useHDR,int colorLUTResolution,CameraSettings.FinalBlendMode finalBlendMode)
     {
         this.colorLUTResolution = colorLUTResolution;
         this.useHDR = useHDR;
         this.context = context;
         this.camera = camera;
         this.settings = camera.cameraType <= CameraType.SceneView ? settings : null;    //只渲染enum的前两个，即 GameView 和SceneView
+        this.finalBlendMode = finalBlendMode;
         ApplySceneViewState();
     }
 
@@ -89,11 +91,20 @@ public partial class PostFXStack
         buffer.SetRenderTarget(to,RenderBufferLoadAction.DontCare,RenderBufferStoreAction.Store);
         buffer.DrawProcedural(Matrix4x4.identity, settings.Material,(int) pass,MeshTopology.Triangles,3);
     }
- 
+
+    private int finalSrcBlendId = Shader.PropertyToID("_FinalSrcBlend");
+    private int finalDstBlendId = Shader.PropertyToID("_FinalDstBlend");
     void DrawFinal(RenderTargetIdentifier from)
     {
+        buffer.SetGlobalFloat(finalSrcBlendId,(float)finalBlendMode.source);
+        buffer.SetGlobalFloat(finalDstBlendId,(float)finalBlendMode.destination);
         buffer.SetGlobalTexture(fxSourceId,from);
-        buffer.SetRenderTarget(BuiltinRenderTextureType.CameraTarget,RenderBufferLoadAction.DontCare,RenderBufferStoreAction.Store);    //加载目标缓冲区
+        buffer.SetRenderTarget(BuiltinRenderTextureType.CameraTarget,
+            finalBlendMode.destination == BlendMode.Zero
+                ? RenderBufferLoadAction.DontCare
+                : RenderBufferLoadAction.Load,
+            RenderBufferStoreAction.Store);
+            //RenderBufferLoadAction.DontCare,RenderBufferStoreAction.Store);    //加载目标缓冲区
         buffer.SetViewport(camera.pixelRect);
         buffer.DrawProcedural(Matrix4x4.identity, settings.Material,(int) Pass.Final,MeshTopology.Triangles,3);
     }

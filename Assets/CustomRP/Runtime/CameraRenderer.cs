@@ -27,6 +27,9 @@ public partial class CameraRenderer
     
     PostFXStack postFxStack = new PostFXStack();
     private bool useHDR;
+    
+    static CameraSettings defaultCameraSettings = new CameraSettings();
+
     /// <summary>
     /// 相机渲染
     /// </summary>
@@ -36,6 +39,8 @@ public partial class CameraRenderer
     {
         this.context = context;
         this.camera = camera;
+        var crpCamera = camera.GetComponent<CustomRenderPipelineCamera>();
+        CameraSettings cameraSettings = crpCamera ? crpCamera.Settings : defaultCameraSettings;
         //设置buffer缓冲区的名字
         PrepareBuffer();
         // 在Game视图绘制的几何体也绘制到Scene视图中
@@ -50,7 +55,7 @@ public partial class CameraRenderer
         buffer.BeginSample(SampleName);
         ExecuteBuffer();
         lighting.Setup(context, cullingResults,shadowSettings,useLightsPerObject);
-        postFxStack.Setup(context,camera,postFxSettings,useHDR,colorLUTResolution);
+        postFxStack.Setup(context,camera,postFxSettings,useHDR,colorLUTResolution,cameraSettings.finalBlendMode);
         buffer.EndSample(SampleName);
         
         Setup();
