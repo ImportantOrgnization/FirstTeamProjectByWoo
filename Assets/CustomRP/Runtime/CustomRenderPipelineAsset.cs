@@ -7,7 +7,7 @@ using UnityEngine.Rendering;
 /// </summary>
 //该标签会在你在Project下右键->Asset/Create菜单中添加一个新的子菜单
 [CreateAssetMenu(menuName ="Rendering/CreateCustomRenderPipeline")]
-public class CustomRenderPipelineAsset : RenderPipelineAsset
+public partial class CustomRenderPipelineAsset : RenderPipelineAsset
 {
     public enum ColorLUTResolution
     {

@@ -203,7 +203,10 @@ public class Shadows
     private void RenderDirectionalShadows(int index,int split, int tileSize)
     {
         ShadowedDirectionalLight light = shadowedDirectionalLights[index];
-        var shadowSettings = new ShadowDrawingSettings(cullingResults, light.visibleLightIndex);
+        var shadowSettings = new ShadowDrawingSettings(cullingResults, light.visibleLightIndex)
+        {
+            useRenderingLayerMaskTest = true,
+        };
         //得到级联阴影贴图需要的参数
         int cascadeCount = settings.directional.cascadeCount;
         int tileOffset = index * cascadeCount;
@@ -304,7 +307,10 @@ public class Shadows
     void RenderPointShadows(int index, int split, int tileSize)
     {
         ShadowedOtherLight light = shadowedOtherLights[index];
-        var shadowSettings = new ShadowDrawingSettings(cullingResults,light.visibleLightIndex);
+        var shadowSettings = new ShadowDrawingSettings(cullingResults, light.visibleLightIndex)
+        {
+            useRenderingLayerMaskTest = true,
+        };
         float texelSize = 2f / tileSize;    //6面体，每个面的FOV都是90°，不用算了，就2f
         float filterSize = texelSize * ((float) settings.other.filter + 1);
         //计算法线偏差
@@ -342,7 +348,10 @@ public class Shadows
     void RenderSpotShadow(int index, int split, int tileSize)
     {
         ShadowedOtherLight light = shadowedOtherLights[index];
-        var shadowSettings = new ShadowDrawingSettings(cullingResults, light.visibleLightIndex);
+        var shadowSettings = new ShadowDrawingSettings(cullingResults, light.visibleLightIndex)
+        {
+            useRenderingLayerMaskTest = true,
+        };
         cullingResults.ComputeSpotShadowMatricesAndCullingPrimitives(light.visibleLightIndex, out var viewMatrix,
             out var projectionMatrix, out var splitData);
         shadowSettings.splitData = splitData;
