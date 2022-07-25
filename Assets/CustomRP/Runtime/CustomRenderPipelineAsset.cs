@@ -17,6 +17,7 @@ public class CustomRenderPipelineAsset : RenderPipelineAsset
     //设置批处理启用状态
     [SerializeField]
     bool useDynamicBatching = true, useGPUInstancing = true, useSRPBatcher = true;
+    [SerializeField]
     //是否使用逐对象光照
     bool useLightsPerObject = true;
     //阴影设置
