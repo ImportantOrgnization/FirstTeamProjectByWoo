@@ -89,7 +89,15 @@ public partial class PostFXStack
         buffer.SetRenderTarget(to,RenderBufferLoadAction.DontCare,RenderBufferStoreAction.Store);
         buffer.DrawProcedural(Matrix4x4.identity, settings.Material,(int) pass,MeshTopology.Triangles,3);
     }
-
+ 
+    void DrawFinal(RenderTargetIdentifier from)
+    {
+        buffer.SetGlobalTexture(fxSourceId,from);
+        buffer.SetRenderTarget(BuiltinRenderTextureType.CameraTarget,RenderBufferLoadAction.DontCare,RenderBufferStoreAction.Store);
+        buffer.SetViewport(camera.pixelRect);
+        buffer.DrawProcedural(Matrix4x4.identity, settings.Material,(int) Pass.Final,MeshTopology.Triangles,3);
+    }
+    
     private int bloomBicubicUpsamplingId = Shader.PropertyToID("_BloomBicubicUpsampling");
     private int bloomResultId = Shader.PropertyToID("_BloomResult");
     bool DoBloom(int sourceId)
@@ -271,7 +279,8 @@ public partial class PostFXStack
         buffer.SetGlobalFloat(colorGradingLUTInLogId,useHDR && pass != Pass.ColorGradingNone ? 1f:0f);
         Draw(sourceId,colorGradingLUTId,pass);
         buffer.SetGlobalVector(colorGradingLUTParameterId,new Vector4(1f/lutWidth,1f/lutHeight,lutHeight - 1f));
-        Draw(sourceId,BuiltinRenderTextureType.CameraTarget,Pass.Final);
+        //Draw(sourceId,BuiltinRenderTextureType.CameraTarget,Pass.Final);
+        DrawFinal(sourceId);
         buffer.ReleaseTemporaryRT(colorGradingLUTId);
     }
     
