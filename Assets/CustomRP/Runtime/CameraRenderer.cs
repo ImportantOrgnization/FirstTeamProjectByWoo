@@ -41,6 +41,12 @@ public partial class CameraRenderer
         this.camera = camera;
         var crpCamera = camera.GetComponent<CustomRenderPipelineCamera>();
         CameraSettings cameraSettings = crpCamera ? crpCamera.Settings : defaultCameraSettings;
+        //如果需要覆盖后处理配置，将渲染管线的后处理配置替换成该相机的后处理配置
+        if (cameraSettings.overridePostFX)
+        {
+            postFxSettings = cameraSettings.postFxSettings;
+        }
+        
         //设置buffer缓冲区的名字
         PrepareBuffer();
         // 在Game视图绘制的几何体也绘制到Scene视图中
