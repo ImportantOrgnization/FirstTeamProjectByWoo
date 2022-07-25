@@ -75,6 +75,7 @@ float4 LitPassFragment(Varyings input) : SV_TARGET {
 	surface.fresnelStrength = GetFresnel(input.baseUV);
 	//计算抖动
 	surface.dither = InterleavedGradientNoise(input.positionCS.xy,0);
+	surface.renderingLayerMask = asuint(unity_RenderingLayer.x);
 	//通过表面属性和BRDF计算最终光照结果
 #if defined(_PREMULTIPLY_ALPHA)
 	BRDF brdf = GetBRDF(surface, true);

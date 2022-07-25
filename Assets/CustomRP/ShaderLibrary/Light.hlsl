@@ -9,7 +9,7 @@ CBUFFER_START(_CustomLight)
 	int _DirectionalLightCount;
 	//定向光源颜色、方向、阴影等数据
     float4 _DirectionalLightColors[MAX_DIRECTIONAL_LIGHT_COUNT];
-    float4 _DirectionalLightDirections[MAX_DIRECTIONAL_LIGHT_COUNT];
+    float4 _DirectionalLightDirectionsAndMasks[MAX_DIRECTIONAL_LIGHT_COUNT];
     //阴影强度和图块偏移
     float4 _DirectionalLightShadowData[MAX_DIRECTIONAL_LIGHT_COUNT];
     
@@ -17,7 +17,7 @@ CBUFFER_START(_CustomLight)
     int _OtherLightCount;
     float4 _OtherLightColors[MAX_OTHER_LIGHT_COUNT];    //这是一个颜色乘以强度的值的队列
     float4 _OtherLightPositions[MAX_OTHER_LIGHT_COUNT];
-    float4 _OtherLightDirections[MAX_OTHER_LIGHT_COUNT];
+    float4 _OtherLightDirectionsAndMasks[MAX_OTHER_LIGHT_COUNT];
     float4 _OtherLightSpotAngles[MAX_OTHER_LIGHT_COUNT];
     
     float4 _OtherLightShadowData[MAX_OTHER_LIGHT_COUNT];
@@ -32,6 +32,8 @@ struct Light {
 	float3 direction;
 	//灯光衰减
 	float attenuation;
+	
+	uint renderingLayerMask;
 };
 //获取方向光源的数量
 int GetDirectionalLightCount() {
@@ -53,7 +55,9 @@ DirectionalShadowData GetDirectionalShadowData(int lightIndex,ShadowData shadowD
 Light GetDirectionalLight (int index,Surface surfaceWS,ShadowData shadowData) {
 	Light light;
 	light.color = _DirectionalLightColors[index].rgb;
-	light.direction = _DirectionalLightDirections[index].xyz;
+	light.direction = _DirectionalLightDirectionsAndMasks[index].xyz;
+    light.renderingLayerMask = asuint(_DirectionalLightDirectionsAndMasks[index].w);
+
 	//得到阴影数据
 	DirectionalShadowData dirShadowData = GetDirectionalShadowData(index,shadowData);
 	//得到阴影衰减
@@ -96,7 +100,9 @@ Light GetOtherLight(int index , Surface surfaceWS,ShadowData shadowData)
     float rangeAttenuation = Square(saturate(1.0 - Square(distanceSqr * _OtherLightPositions[index].w)));
     light.attenuation = rangeAttenuation / distanceSqr;
     
-    float3 spotDirection = _OtherLightDirections[index].xyz;
+    float3 spotDirection = _OtherLightDirectionsAndMasks[index].xyz;
+    light.renderingLayerMask = asuint(_OtherLightDirectionsAndMasks[index].w);
+    
     //得到聚光灯衰减
     float4 spotAngles = _OtherLightSpotAngles[index];
     float spotAttenuation = Square(saturate(dot(spotDirection,light.direction) * spotAngles.x + spotAngles.y)); //saturate( (d - cos(r0/2)) / (cos(ri/2) - cos(ro / 2)) ) ^2
