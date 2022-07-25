@@ -128,7 +128,7 @@
 		
 		Pass {  //11
 			Name "Final"
-
+			Blend SrcAlpha OneMinusSrcAlpha
 			HLSLPROGRAM
 				#pragma target 3.5
 				#pragma vertex DefaultPassVertex

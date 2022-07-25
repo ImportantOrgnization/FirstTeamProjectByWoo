@@ -120,8 +120,8 @@ float4 BloomAddPassFragment(Varyings input) : SV_TARGET
         lowRes = GetSource(input.screenUV).rgb;
     }
     
-    float3 highRes = GetSource2(input.screenUV).rgb;
-    return float4(lowRes * _BloomIntensity + highRes , 1.0);
+    float4 highRes = GetSource2(input.screenUV);
+    return float4(lowRes * _BloomIntensity + highRes , highRes.a);
 }
 
 float4 BloomScatterPassFragment(Varyings input) : SV_TARGET
@@ -136,8 +136,9 @@ float4 BloomScatterPassFragment(Varyings input) : SV_TARGET
         lowRes = GetSource(input.screenUV).rgb;
     }
     
-    float3 highRes = GetSource2(input.screenUV).rgb;
-    return float4(lerp(highRes, lowRes , _BloomIntensity) , 1.0);
+    float4 highRes = GetSource2(input.screenUV);
+    lowRes += highRes.rgb - ApplyBloomThreshold(highRes.rgb);
+    return float4(lerp(highRes.rgb, lowRes , _BloomIntensity) , highRes.a);
 }
 
 //Bloom Prefilter Pass  提取高亮

@@ -93,7 +93,7 @@ public partial class PostFXStack
     void DrawFinal(RenderTargetIdentifier from)
     {
         buffer.SetGlobalTexture(fxSourceId,from);
-        buffer.SetRenderTarget(BuiltinRenderTextureType.CameraTarget,RenderBufferLoadAction.DontCare,RenderBufferStoreAction.Store);
+        buffer.SetRenderTarget(BuiltinRenderTextureType.CameraTarget,RenderBufferLoadAction.DontCare,RenderBufferStoreAction.Store);    //加载目标缓冲区
         buffer.SetViewport(camera.pixelRect);
         buffer.DrawProcedural(Matrix4x4.identity, settings.Material,(int) Pass.Final,MeshTopology.Triangles,3);
     }
