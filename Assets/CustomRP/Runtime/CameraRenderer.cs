@@ -67,7 +67,7 @@ public partial class CameraRenderer
         Setup();
 
         //绘制几何体
-        DrawVisibleGeometry(useDynamicBatching, useGPUInstancing,useLightsPerObject);
+        DrawVisibleGeometry(useDynamicBatching, useGPUInstancing,useLightsPerObject,cameraSettings.renderingLayerMask);
         //绘制SRP不支持的内置shader类型
         DrawUnsupportedShaders();
 
@@ -87,7 +87,7 @@ public partial class CameraRenderer
     /// <summary>
     /// 绘制几何体
     /// </summary>
-    void DrawVisibleGeometry(bool useDynamicBatching, bool useGPUInstancing,bool useLightsPerObject)
+    void DrawVisibleGeometry(bool useDynamicBatching, bool useGPUInstancing,bool useLightsPerObject,int renderingLayerMask)
     {
         PerObjectData lightsPerObjectFlags = useLightsPerObject ? PerObjectData.LightData | PerObjectData.LightIndices : PerObjectData.None;
         //设置绘制顺序和指定渲染相机
@@ -107,7 +107,8 @@ public partial class CameraRenderer
         //渲染CustomLit表示的pass块
         drawingSettings.SetShaderPassName(1, litShaderTagId);
         ////只绘制RenderQueue为opaque不透明的物体
-        var filteringSettings = new FilteringSettings(RenderQueueRange.opaque);
+        var filteringSettings = new FilteringSettings(RenderQueueRange.opaque,renderingLayerMask:(uint) renderingLayerMask);
+      
         //1.绘制不透明物体
         context.DrawRenderers(cullingResults, ref drawingSettings, ref filteringSettings);
         

@@ -7,6 +7,9 @@ using UnityEngine.Rendering;
 [Serializable]
 public class CameraSettings
 {
+    [RenderingLayerMaskField]
+    public int renderingLayerMask = -1;
+    
     [Serializable]
     public struct FinalBlendMode
     {

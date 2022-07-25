@@ -16,7 +16,7 @@ public class CustomLightEditor : LightEditor
     public override void OnInspectorGUI()
     {
         base.OnInspectorGUI();
-        DrawRenderingLayerMask();
+        RenderingLayerMaskDrawer.Draw(settings.renderingLayerMask,renderingLayerMaskLabel);
         if (!settings.lightType.hasMultipleDifferentValues && (LightType)settings.lightType.enumValueIndex == LightType.Spot)
         {
             settings.DrawInnerAndOuterSpotAngle();
@@ -33,29 +33,4 @@ public class CustomLightEditor : LightEditor
         }
     }
 
-    void DrawRenderingLayerMask()
-    {
-        //int.maxValue = Mixing , 0 = Nothing , -1 = EveryThing
-        SerializedProperty property = settings.renderingLayerMask;    //renderingLayerMask 内部存储的是uint32类型，Eveything由 -1 标识，32层最高位代表比int.MaxValue大的数字，它们都Clamp为0 ，所以选择Everything和32层时，都会变成Nothing
-        EditorGUI.showMixedValue = property.hasMultipleDifferentValues;
-        EditorGUI.BeginChangeCheck();
-        int mask = property.intValue;
-        if (mask == int.MaxValue)
-        {
-            mask = -1;
-        }
-        
-
-        mask = EditorGUILayout.MaskField(renderingLayerMaskLabel, mask, GraphicsSettings.currentRenderPipeline.renderingLayerMaskNames);    //注意，这个renderingLayerMaskNames被override过了，在 .Editor.cs 文件中
-        if (EditorGUI.EndChangeCheck())
-        {
-            property.intValue = mask == -1? int.MaxValue : mask;
-        
-
-        }
-        EditorGUI.showMixedValue = false;
-
-        
-        
-    }
 }
