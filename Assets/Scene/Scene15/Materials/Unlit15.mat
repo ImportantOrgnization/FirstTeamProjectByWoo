@@ -9,7 +9,7 @@ Material:
   m_PrefabAsset: {fileID: 0}
   m_Name: Unlit15
   m_Shader: {fileID: 4800000, guid: cb834cdb9900e0d428de66cbfcca58e7, type: 3}
-  m_ShaderKeywords: _RECEIVE_SHADOWS _SHADOWS_ON _VERTEX_COLORS
+  m_ShaderKeywords: _FLIPBOOK_BLENDING _RECEIVE_SHADOWS _SHADOWS_ON _VERTEX_COLORS
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -20,7 +20,7 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
     - _BaseMap:
-        m_Texture: {fileID: 10300, guid: 0000000000000000f000000000000000, type: 0}
+        m_Texture: {fileID: 2800000, guid: b8081dc23324d024694c63743bc9d84b, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _BumpMap:
@@ -81,6 +81,7 @@ Material:
     - _DetailNormalScale: 1
     - _DetailSmoothness: 1
     - _DstBlend: 10
+    - _FlipbookBlending: 1
     - _Fresnel: 1
     - _GlossMapScale: 1
     - _Glossiness: 0.5

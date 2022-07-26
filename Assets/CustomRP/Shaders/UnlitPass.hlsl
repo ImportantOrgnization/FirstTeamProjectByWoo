@@ -5,7 +5,12 @@
 struct Attributes {
     float4 color : COLOR;
 	float3 positionOS : POSITION;
-	float2 baseUV : TEXCOORD0;
+#if defined(_FLIPBOOK_BLENDING)
+    float4 baseUV : TEXCOORD0;
+    float flipbookBlending : TEXCOORD1;
+#else
+    float2 baseUV : TEXCOORD0;
+#endif
 	UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 //片元函数输入结构体
@@ -15,6 +20,10 @@ struct Varyings {
 #endif
 	float4 positionCS : SV_POSITION;
 	float2 baseUV : VAR_BASE_UV;
+#if defined(_FLIPBOOK_BLENDING)
+    float3 flipbookUVB : VAR_FLIPBOOK;
+#endif	
+
 	UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
@@ -31,7 +40,11 @@ Varyings UnlitPassVertex(Attributes input){
     output.color = input.color;
 #endif
 	//计算缩放和偏移后的UV坐标
-	output.baseUV = TransformBaseUV(input.baseUV);
+	output.baseUV = TransformBaseUV(input.baseUV.xy);
+#if defined(_FLIPBOOK_BLENDING)
+    output.flipbookUVB.xy = TransformBaseUV(input.baseUV.zw);
+    output.flipbookUVB.z = input.flipbookBlending;
+#endif
 	return output;
 }
 //片元函数
@@ -39,6 +52,10 @@ float4 UnlitPassFragment (Varyings input) : SV_TARGET {
     InputConfig config = GetInputConfig(input.baseUV);
 #if defined(_VERTEX_COLORS)
     config.color = input.color;
+#endif
+#if defined(_FLIPBOOK_BLENDING)
+    config.flipbookUVB = input.flipbookUVB;
+    config.flipbookBlending = true;    
 #endif
 	UNITY_SETUP_INSTANCE_ID(input);
     //float4 baseMap = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.baseUV);
