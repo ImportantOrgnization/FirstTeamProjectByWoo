@@ -58,6 +58,9 @@ float4 UnlitPassFragment (Varyings input) : SV_TARGET {
     config.flipbookUVB = input.flipbookUVB;
     config.flipbookBlending = true;    
 #endif
+#if defined(_NEAR_FADE)
+    config.nearFade = true;
+#endif
 	UNITY_SETUP_INSTANCE_ID(input);
     //float4 baseMap = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.baseUV);
     float4 baseMap = GetBase(config);
