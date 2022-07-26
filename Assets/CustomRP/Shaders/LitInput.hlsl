@@ -1,9 +1,12 @@
 ﻿#ifndef CUSTOM_LIT_INPUT_INCLUDED
 #define CUSTOM_LIT_INPUT_INCLUDED
 
+#define INPUT_PROP(name) UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,name)
+
 TEXTURE2D(_BaseMap);
 SAMPLER(sampler_BaseMap);
 TEXTURE2D(_EmissionMap);
+TEXTURE2D(_MaskMap);
 
 UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
 UNITY_DEFINE_INSTANCED_PROP(float4, _BaseMap_ST)
@@ -18,47 +21,56 @@ UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
 
 float2 TransformBaseUV(float2 baseUV)
 {
-    float4 baseST = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_BaseMap_ST);
+    float4 baseST = INPUT_PROP(_BaseMap_ST);
     return baseUV * baseST.xy + baseST.zw;
 }
 
 float4 GetBase(float2 baseUV)
 {
     float4 map = SAMPLE_TEXTURE2D(_BaseMap,sampler_BaseMap,baseUV);
-    float4 color = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_BaseColor);
+    float4 color = INPUT_PROP(_BaseColor);
     return map * color;
+}
+
+float4 GetMask(float2 baseUV)
+{
+    return SAMPLE_TEXTURE2D(_MaskMap,sampler_BaseMap,baseUV);
 }
 
 float GetCutoff(float2 baseUV)
 {
-    return UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_Cutoff);
+    return INPUT_PROP(_Cutoff);
 }
 
 float GetMetallic(float2 baseUV)
 {
-    return UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_Metallic);
+    float metallic = INPUT_PROP(_Metallic);
+    metallic *= GetMask(baseUV).r;
+    return metallic;
 }
 
 float GetSmoothness(float2 baseUV)
 {
-    return UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_Smoothness);
+    float smoothness = INPUT_PROP(_Smoothness);
+    smoothness *= GetMask(baseUV).a;
+    return smoothness;
 }
 
 float3 GetEmission(float2 baseUV)
 {
     float4 map = SAMPLE_TEXTURE2D(_EmissionMap,sampler_BaseMap,baseUV);
-    float4 color = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_EmissionColor);
+    float4 color = INPUT_PROP(_EmissionColor);
     return map.rgb * color.rgb;
 }
 
 float GetFresnel(float2 baseUV)
 {
-    return UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_Fresnel); 
+    return INPUT_PROP(_Fresnel); 
 }
 
 float GetFinalAlpha(float alpha)
 {
-    return UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,ZWrite) ? 1.0 : alpha;
+    return INPUT_PROP(ZWrite) ? 1.0 : alpha;
 }
 
 #endif

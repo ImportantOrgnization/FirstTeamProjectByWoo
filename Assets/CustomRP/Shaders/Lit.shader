@@ -9,6 +9,8 @@
 	    [Toggle(_CLIPPING)] _Clipping("Alpha Clipping", Float) = 0
         //透明通道预乘
 	    [Toggle(_PREMULTIPLY_ALPHA)] _PremulAlpha("Premultiply Alpha", Float) = 0
+	    //遮罩纹理
+	    [NoScaleOffset] _MaskMap("Mask (MODS)",2D) = "white" {}
         //金属度和光滑度
 	    _Metallic("Metallic", Range(0, 1)) = 0
 	    _Smoothness("Smoothness", Range(0, 1)) = 0.5
