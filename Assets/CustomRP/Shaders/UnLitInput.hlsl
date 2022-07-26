@@ -15,37 +15,51 @@ UNITY_DEFINE_INSTANCED_PROP(float, _Smoothness)
 UNITY_DEFINE_INSTANCED_PROP(float, ZWrite)
 UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
 
+struct InputConfig
+{
+    float2 baseUV;
+    float2 detailUV;
+};
+
+InputConfig GetInputConfig(float2 baseUV,float2 detailUV = 0.0)
+{
+    InputConfig c;
+    c.baseUV = baseUV;
+    c.detailUV = detailUV;
+    return c;
+}
+
 float2 TransformBaseUV(float2 baseUV)
 {
     float4 baseST = INPUT_PROP(_BaseMap_ST);
     return baseUV * baseST.xy + baseST.zw;
 }
 
-float4 GetBase(float2 baseUV)
+float4 GetBase(InputConfig c)
 {
-    float4 map = SAMPLE_TEXTURE2D(_BaseMap,sampler_BaseMap,baseUV);
+    float4 map = SAMPLE_TEXTURE2D(_BaseMap,sampler_BaseMap,c.baseUV);
     float4 color = INPUT_PROP(_BaseColor);
     return map * color;
 }
 
-float GetCutoff(float2 baseUV)
+float GetCutoff(InputConfig c)
 {
     return INPUT_PROP(_Cutoff);
 }
 
-float GetMetallic(float2 baseUV)
+float GetMetallic(InputConfig c)
 {
     return INPUT_PROP(_Metallic);
 }
 
-float GetSmoothness(float2 baseUV)
+float GetSmoothness(InputConfig c)
 {
     return INPUT_PROP(_Smoothness);
 }
 
-float3 GetEmission(float2 baseUV)
+float3 GetEmission(InputConfig c)
 {
-    return GetBase(baseUV).rgb;
+    return GetBase(c).rgb;
 }
 
 float GetFinalAlpha(float alpha)

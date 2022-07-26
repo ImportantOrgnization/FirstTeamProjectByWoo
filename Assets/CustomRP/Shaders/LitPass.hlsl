@@ -64,28 +64,30 @@ float4 LitPassFragment(Varyings input) : SV_TARGET {
 */
     ClipLOD(input.positionCS.xy,unity_LODFade.x);
     
-	float4 base = GetBase(input.baseUV,input.detailUV);
+    InputConfig config = GetInputConfig(input.baseUV,input.detailUV);
+    
+	float4 base = GetBase(config);
 #if defined(_CLIPPING)
 	//透明度低于阈值的片元进行舍弃
-	clip(base.a - GetCutoff(input.baseUV));
+	clip(base.a - GetCutoff(config));
 #endif
 	//定义一个surface并填充属性
 	Surface surface;
 	surface.position = input.positionWS;
-	surface.normal = NormalTangentToWorld(GetNormalTS(input.baseUV,input.detailUV) , input.normalWS,input.tangentWS);
+	surface.normal = NormalTangentToWorld(GetNormalTS(config) , input.normalWS,input.tangentWS);
 	surface.interpolatedNormal = input.normalWS;
 	//得到视角方向
 	surface.viewDirection = normalize(_WorldSpaceCameraPos - input.positionWS);
 	surface.depth = -TransformWorldToView(input.positionWS).z;
 	surface.color = base.rgb;
 	surface.alpha = base.a;
-	surface.metallic = GetMetallic(input.baseUV);
-	surface.smoothness = GetSmoothness(input.baseUV,input.detailUV);
-	surface.fresnelStrength = GetFresnel(input.baseUV);
+	surface.metallic = GetMetallic(config);
+	surface.smoothness = GetSmoothness(config);
+	surface.fresnelStrength = GetFresnel(config);
 	//计算抖动
 	surface.dither = InterleavedGradientNoise(input.positionCS.xy,0);
 	surface.renderingLayerMask = asuint(unity_RenderingLayer.x);
-	surface.occlusion = GetOcclusion(input.baseUV);
+	surface.occlusion = GetOcclusion(config);
 	//通过表面属性和BRDF计算最终光照结果
 #if defined(_PREMULTIPLY_ALPHA)
 	BRDF brdf = GetBRDF(surface, true);
@@ -94,7 +96,7 @@ float4 LitPassFragment(Varyings input) : SV_TARGET {
 #endif
     GI gi = GetGI(GI_FRAGMENT_DATA(input),surface,brdf);
 	float3 color = GetLighting(surface, brdf, gi);
-	color += GetEmission(input.baseUV);
+	color += GetEmission(config);
 	return float4(color, GetFinalAlpha(surface.alpha));
 }
 
