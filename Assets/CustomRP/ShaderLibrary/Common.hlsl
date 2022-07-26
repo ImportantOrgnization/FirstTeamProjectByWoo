@@ -32,6 +32,20 @@ float DistanceSquared(float3 pA,float3 pB)
 SAMPLER(sampler_linear_clamp);
 SAMPLER(sampler_point_clamp);
 
+//根据unity_OrthographicCamera的w分量判断是否为正交相机
+bool IsOrthographicCamera()
+{
+    return unity_OrthoParams.w;
+}
+
+float OrthographicDepthBufferToLinear(float rawDepth)
+{
+#if UNITY_REVERSED_Z
+    rawDepth = 1.0 - rawDepth;
+#endif
+    return (_ProjectionParams.z - _ProjectionParams.y) * rawDepth + _ProjectionParams.y; //yz 分量分别是近远裁剪面的值
+}
+
 #include "Fragment.hlsl"
 
 void ClipLOD(Fragment fragment, float fade)

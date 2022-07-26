@@ -31,6 +31,11 @@ float4 unity_ProbeVolumeMin;
 
 real4 unity_LightData;  //y分量中包含了灯光数量
 real4 unity_LightIndices[2];    //它的两个分量都包含了一个灯光索引，所以每个对象最多支持8个
+
+float4 _ProjectionParams;
+//正交相机信息
+float4 unity_OrthoParams;
+
 CBUFFER_END
 //相机位置
 float3 _WorldSpaceCameraPos;    //将相机位置放在 UnityPerDraw 缓存区中，如果打开SRP Batcher 会造成这个值不停在闪的现象
@@ -39,5 +44,4 @@ float4x4 unity_MatrixVP;
 float4x4 unity_MatrixV;
 float4x4 glstate_matrix_projection;
 
-float4 _ProjectionParams;
 #endif
