@@ -20,6 +20,7 @@
 	    //细节纹理
 	    _DetailMap("Detials",2D) = "linearGrey" {}
 	    _DetailAlbedo("Detail Albedo",Range(0,1)) = 1
+	    _DetailSmoothness("Detail Smoothness" , Range(0,1)) = 1
 	    //设置混合模式
 	    [Enum(UnityEngine.Rendering.BlendMode)] _SrcBlend("Src Blend", Float) = 1
 	    [Enum(UnityEngine.Rendering.BlendMode)] _DstBlend("Dst Blend", Float) = 0
