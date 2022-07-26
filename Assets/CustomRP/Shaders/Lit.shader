@@ -5,6 +5,7 @@
 	    _BaseMap("Texture", 2D) = "white" {}
 	    _BaseColor("Color", Color) = (0.5, 0.5, 0.5, 1.0)
 	    //法线贴图
+	    [Toggle(_NORMAL_MAP)] _NormalMapToggle("Normal Map",Float) = 0
 	    [NoScaleOffset] _NormalMap("Normals", 2D) = "bump" {}
 	    _NormalScale("Normal Scale", Range(0,1)) = 1
 	    //透明度测试的阈值
@@ -69,6 +70,7 @@
             #pragma multi_compile_instancing
             #pragma shader_feature _RECEIVE_SHADOWS
             #pragma multi_compile _ LOD_FADE_CROSSFADE
+            #pragma shader_feature _NORMAL_MAP
             //是否使用逐对象光源
             #pragma multi_compile _ _LIGHTS_PER_OBJECT
             #pragma vertex LitPassVertex

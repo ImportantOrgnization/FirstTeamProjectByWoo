@@ -8,6 +8,7 @@
 #include "../ShaderLibrary/Lighting.hlsl"
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Random.hlsl"
 
+
 //顶点函数输入结构体
 struct Attributes {
 	float3 positionOS : POSITION;
@@ -28,8 +29,10 @@ struct Varyings
 	float2 detailUV : VAR_DETIAIL_UV;
 	//世界法线
 	float3 normalWS : VAR_NORMAL;
+#if defined(_NORMAL_MAP)
 	//世界空间的切线
 	float4 tangentWS : VAR_TANGENT;
+#endif
 	GI_VARINGS_DATA
 	UNITY_VERTEX_INPUT_INSTANCE_ID
 };
@@ -46,8 +49,10 @@ Varyings LitPassVertex(Attributes input){
 	output.positionCS = TransformWorldToHClip(output.positionWS);
 	//计算世界空间的法线
 	output.normalWS = TransformObjectToWorldNormal(input.normalOS);
+#if defined(_NORMAL_MAP)
 	//计算世界空间的切线
 	output.tangentWS = float4(TransformObjectToWorldDir(input.tangentOS.xyz),input.tangentOS.w);
+#endif
 	//计算缩放和偏移后的UV坐标
 	output.baseUV = TransformBaseUV(input.baseUV);
 	output.detailUV = TransformDetailUV(input.baseUV);
@@ -74,8 +79,13 @@ float4 LitPassFragment(Varyings input) : SV_TARGET {
 	//定义一个surface并填充属性
 	Surface surface;
 	surface.position = input.positionWS;
+#if defined(_NORMAL_MAP)
 	surface.normal = NormalTangentToWorld(GetNormalTS(config) , input.normalWS,input.tangentWS);
 	surface.interpolatedNormal = input.normalWS;
+#else
+    surface.normal = normalize(input.normalWS);
+    surface.interpolatedNormal = surface.normal;	
+#endif
 	//得到视角方向
 	surface.viewDirection = normalize(_WorldSpaceCameraPos - input.positionWS);
 	surface.depth = -TransformWorldToView(input.positionWS).z;
