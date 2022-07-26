@@ -60,7 +60,7 @@ public partial class CameraRenderer
         
         buffer.BeginSample(SampleName);
         ExecuteBuffer();
-        lighting.Setup(context, cullingResults,shadowSettings,useLightsPerObject);
+        lighting.Setup(context, cullingResults,shadowSettings,useLightsPerObject,cameraSettings.maskLights?cameraSettings.renderingLayerMask : -1 );
         postFxStack.Setup(context,camera,postFxSettings,useHDR,colorLUTResolution,cameraSettings.finalBlendMode);
         buffer.EndSample(SampleName);
         

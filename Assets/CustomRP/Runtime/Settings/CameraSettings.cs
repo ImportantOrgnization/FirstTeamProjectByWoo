@@ -7,8 +7,11 @@ using UnityEngine.Rendering;
 [Serializable]
 public class CameraSettings
 {
-    [RenderingLayerMaskField]
+    [RenderingLayerMaskField][Tooltip("物体遮罩")]
     public int renderingLayerMask = -1;
+    
+    [Tooltip("灯光遮罩")]
+    public bool maskLights = false;
     
     [Serializable]
     public struct FinalBlendMode

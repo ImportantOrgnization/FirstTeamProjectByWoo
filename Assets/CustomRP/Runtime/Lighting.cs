@@ -47,13 +47,14 @@ public class Lighting
 	
     Shadows shadows = new Shadows();
     //初始化设置
-    public void Setup(ScriptableRenderContext context, CullingResults cullingResults,ShadowSettings shadowSettings,bool useLightsPerObject)
+    public void Setup(ScriptableRenderContext context, CullingResults cullingResults,ShadowSettings shadowSettings,bool useLightsPerObject , int renderingLayerMask)
 	{
         this.cullingResults = cullingResults;
         buffer.BeginSample(bufferName);
         //传递阴影数据
         shadows.Setup(context,cullingResults,shadowSettings);
-        SetupLights(useLightsPerObject);
+        //发送光源数据
+        SetupLights(useLightsPerObject,renderingLayerMask);
         shadows.Render();
         buffer.EndSample(bufferName);
 		context.ExecuteCommandBuffer(buffer);
@@ -77,9 +78,7 @@ public class Lighting
     /// <summary>
     /// 存储并发送所有光源数据
     /// </summary>
-    /// <param name="useLightsPerObject"></param>
-    /// <param name="renderingLayerMask"></param>
-    void SetupLights(bool useLightsPerObject) {
+    void SetupLights(bool useLightsPerObject , int renderingLayerMask) {
 	    //拿到光源索引列表
 	    NativeArray<int> indexMap = useLightsPerObject ? cullingResults.GetLightIndexMap(Allocator.Temp) : default;
 	    
@@ -93,31 +92,36 @@ public class Lighting
 	        int newIndex = -1;
             VisibleLight visibleLight = visibleLights[i];
             Light light = visibleLight.light;
-            switch (visibleLight.lightType)
-            {
-	            case LightType.Spot:
-		            if (otherLightCount < maxOtherLightCount)
-		            {
-			            newIndex = otherLightCount;
-			            SetupSpotLight(otherLightCount++ ,i, ref visibleLight,light);
-		            }
-		            break;
-	            case LightType.Directional:
-		            if (dirLightCount < maxDirLightCount)
-		            {
-			            //VisibleLight结构很大,我们改为传递引用不是传递值，这样不会生成副本
-			            SetupDirectionalLight(dirLightCount ++ ,i, ref visibleLight,light);
-		            }
-		            break;
-	            case LightType.Point:
-		            if (otherLightCount < maxOtherLightCount)
-		            {
-			            newIndex = otherLightCount;
-			            SetupPointLight(otherLightCount++ ,i, ref visibleLight,light);    
-		            }
-		            break;
-            }
 
+            if ((light.renderingLayerMask & renderingLayerMask) != 0)
+            {
+	            switch (visibleLight.lightType)
+	            {
+		            case LightType.Spot:
+			            if (otherLightCount < maxOtherLightCount)
+			            {
+				            newIndex = otherLightCount;
+				            SetupSpotLight(otherLightCount++ ,i, ref visibleLight,light);
+			            }
+			            break;
+		            case LightType.Directional:
+			            if (dirLightCount < maxDirLightCount)
+			            {
+				            //VisibleLight结构很大,我们改为传递引用不是传递值，这样不会生成副本
+				            SetupDirectionalLight(dirLightCount ++ ,i, ref visibleLight,light);
+			            }
+			            break;
+		            case LightType.Point:
+			            if (otherLightCount < maxOtherLightCount)
+			            {
+				            newIndex = otherLightCount;
+				            SetupPointLight(otherLightCount++ ,i, ref visibleLight,light);    
+			            }
+			            break;
+	            }
+            }
+			
+            //匹配光源索引
             if (useLightsPerObject)
             {
 	            indexMap[i] = newIndex;
