@@ -23,6 +23,7 @@
 	    [NoScaleOffset] _EmissionMap("Emission",2D) = "white" {}
 	    [HDR] _EmissionColor("Emission",Color) = (0.0,0.0,0.0,0.0)
 	    //细节纹理
+	    [Toggle(_DETAIL_MAP)] _DetailMapToggle("Detail Maps" ,Float) = 0
 	    _DetailMap("Detials",2D) = "linearGrey" {}
 	    _DetailAlbedo("Detail Albedo",Range(0,1)) = 1
 	    _DetailSmoothness("Detail Smoothness" , Range(0,1)) = 1
@@ -73,6 +74,7 @@
             #pragma multi_compile _ LOD_FADE_CROSSFADE
             #pragma shader_feature _NORMAL_MAP
             #pragma shader_feature _MASK_MAP
+            #pragma shader_feature _DETAIL_MAP
             //是否使用逐对象光源
             #pragma multi_compile _ _LIGHTS_PER_OBJECT
             #pragma vertex LitPassVertex

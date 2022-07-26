@@ -26,7 +26,9 @@ struct Varyings
 	float4 positionCS : SV_POSITION;
 	float3 positionWS : VAR_POSITION;
 	float2 baseUV : VAR_BASE_UV;
+#if defined(_DETAIL_MAP)
 	float2 detailUV : VAR_DETIAIL_UV;
+#endif
 	//世界法线
 	float3 normalWS : VAR_NORMAL;
 #if defined(_NORMAL_MAP)
@@ -55,7 +57,9 @@ Varyings LitPassVertex(Attributes input){
 #endif
 	//计算缩放和偏移后的UV坐标
 	output.baseUV = TransformBaseUV(input.baseUV);
+#if defined(_DETAIL_MAP)
 	output.detailUV = TransformDetailUV(input.baseUV);
+#endif
 	return output;
 }
 //片元函数
@@ -69,7 +73,11 @@ float4 LitPassFragment(Varyings input) : SV_TARGET {
 */
     ClipLOD(input.positionCS.xy,unity_LODFade.x);
     
-    InputConfig config = GetInputConfig(input.baseUV,input.detailUV);
+    InputConfig config = GetInputConfig(input.baseUV);
+#if defined(_DETAIL_MAP)
+    config.detailUV = input.detailUV;
+    config.useDetail = true;
+#endif
 #if defined(_MASK_MAP)
     config.useMask = true; 
 #endif
