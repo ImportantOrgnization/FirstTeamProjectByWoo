@@ -7,14 +7,16 @@ using UnityEngine.Rendering;
 /// </summary>
 public partial class CustomRenderPipeline : RenderPipeline
 {
-    CameraRenderer renderer = new CameraRenderer();
+    //CameraRenderer renderer = new CameraRenderer();
+    private CameraRenderer renderer;
     bool useDynamicBatching, useGPUInstancing;
     bool useLightsPerObject;
     private ShadowSettings shadowSettings;
     private PostFXSettings postFxSettings;
     private bool allowHDR;
     private int colorLUTResolution;
-    public CustomRenderPipeline(bool allowHDR, bool useDynamicBatching, bool useGPUInstancing, bool useSRPBatcher , bool useLightsPerObject , ShadowSettings shadowSettings,PostFXSettings postFxSettings,int colorLutResolution)
+    public CustomRenderPipeline(bool allowHDR, bool useDynamicBatching, bool useGPUInstancing, bool useSRPBatcher , bool useLightsPerObject , 
+        ShadowSettings shadowSettings,PostFXSettings postFxSettings,int colorLutResolution,Shader cameraRendererShader)
     {
         this.shadowSettings = shadowSettings;
         this.postFxSettings = postFxSettings;
@@ -27,6 +29,7 @@ public partial class CustomRenderPipeline : RenderPipeline
         //灯光使用线性强度
         GraphicsSettings.lightsUseLinearIntensity = true;
         InitializeForEditor();
+        renderer = new CameraRenderer(cameraRendererShader);
     }
     protected override void Render(ScriptableRenderContext context, Camera[] cameras)
     {
@@ -35,5 +38,13 @@ public partial class CustomRenderPipeline : RenderPipeline
         {
             renderer.Render(context, camera,allowHDR, useDynamicBatching, useGPUInstancing,useLightsPerObject,shadowSettings,postFxSettings,colorLUTResolution);
         }
+    }
+    
+    //清理和重置委托
+    protected override void Dispose(bool disposing)
+    {
+        base.Dispose(disposing);
+        DisposeForEditor();
+        renderer.Dispose();
     }
 }

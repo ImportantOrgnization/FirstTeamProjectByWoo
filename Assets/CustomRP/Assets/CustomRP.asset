@@ -34,3 +34,5 @@ MonoBehaviour:
   postFxSettings: {fileID: 0}
   allowHDR: 1
   colorLUTResolution: 64
+  cameraRendererShader: {fileID: 4800000, guid: 16fcb5eddabeaa146aa01c66128c097b,
+    type: 3}

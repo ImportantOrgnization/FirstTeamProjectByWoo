@@ -32,6 +32,30 @@ public partial class CameraRenderer
 
     private static int depthTextureId = Shader.PropertyToID("_CameraDepthTexture");
     private bool useDepthTexture;
+    //是否使用中间帧缓冲
+    private bool useIntermediateBuffer;
+
+    private Material material;
+
+    public CameraRenderer(Shader shader)
+    {
+        material = CoreUtils.CreateEngineMaterial(shader);
+    }
+
+    public void Dispose()
+    {
+        CoreUtils.Destroy(material);
+    }
+
+    private static int sourceTextureId = Shader.PropertyToID("_SourceTexture");
+
+    void Draw(RenderTargetIdentifier from, RenderTargetIdentifier to)
+    {
+        buffer.SetGlobalTexture(sourceTextureId , from);
+        buffer.SetRenderTarget(to,RenderBufferLoadAction.DontCare,RenderBufferStoreAction.Store);
+        buffer.DrawProcedural(Matrix4x4.identity, material,0,MeshTopology.Triangles,3);
+    }
+    
     /// <summary>
     /// 相机渲染
     /// </summary>
@@ -80,6 +104,10 @@ public partial class CameraRenderer
         if (postFxStack.IsActive)
         {
             postFxStack.Render(colorAttachmentId);
+        }else if (useIntermediateBuffer)
+        {
+            Draw(colorAttachmentId,BuiltinRenderTextureType.CameraTarget);
+            ExecuteBuffer();
         }
         DrawGizmosAfterFX();
         
@@ -152,7 +180,8 @@ public partial class CameraRenderer
         //得到相机的clear flags
         CameraClearFlags flags = camera.clearFlags;
 
-        if (postFxStack.IsActive)
+        useIntermediateBuffer = useDepthTexture || postFxStack.IsActive;
+        if (useIntermediateBuffer)
         {
             if (flags > CameraClearFlags.Color)
             {
@@ -212,10 +241,14 @@ public partial class CameraRenderer
     void Clearup()
     {
         lighting.Cleanup();
-        if (postFxStack.IsActive)
+        if (useIntermediateBuffer)
         {
             buffer.ReleaseTemporaryRT(colorAttachmentId);
             buffer.ReleaseTemporaryRT(depthAttachmentId);
+            if (useDepthTexture)
+            {
+                buffer.ReleaseTemporaryRT(depthTextureId);
+            }
         }
     }
 }
