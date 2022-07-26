@@ -16,6 +16,8 @@ struct Surface {
 	//顶点着色器传过来的插值法线，未正则化的
 	float3 interpolatedNormal;
 	uint renderingLayerMask;
+	//遮挡数据
+	float occlusion;
 };
 
 #endif
