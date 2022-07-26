@@ -19,6 +19,7 @@ struct InputConfig
 {
     float2 baseUV;
     float2 detailUV;
+    float4 color;
 };
 
 InputConfig GetInputConfig(float2 baseUV,float2 detailUV = 0.0)
@@ -26,6 +27,7 @@ InputConfig GetInputConfig(float2 baseUV,float2 detailUV = 0.0)
     InputConfig c;
     c.baseUV = baseUV;
     c.detailUV = detailUV;
+    c.color = 1.0;
     return c;
 }
 
@@ -39,7 +41,7 @@ float4 GetBase(InputConfig c)
 {
     float4 map = SAMPLE_TEXTURE2D(_BaseMap,sampler_BaseMap,c.baseUV);
     float4 color = INPUT_PROP(_BaseColor);
-    return map * color;
+    return map * color * c.color;
 }
 
 float GetCutoff(InputConfig c)
