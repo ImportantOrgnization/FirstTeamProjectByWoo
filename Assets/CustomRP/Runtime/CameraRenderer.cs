@@ -30,6 +30,8 @@ public partial class CameraRenderer
     
     static CameraSettings defaultCameraSettings = new CameraSettings();
 
+    private static int depthTextureId = Shader.PropertyToID("_CameraDepthTexture");
+    private bool useDepthTexture;
     /// <summary>
     /// 相机渲染
     /// </summary>
@@ -41,6 +43,9 @@ public partial class CameraRenderer
         this.camera = camera;
         var crpCamera = camera.GetComponent<CustomRenderPipelineCamera>();
         CameraSettings cameraSettings = crpCamera ? crpCamera.Settings : defaultCameraSettings;
+
+        useDepthTexture = true;
+        
         //如果需要覆盖后处理配置，将渲染管线的后处理配置替换成该相机的后处理配置
         if (cameraSettings.overridePostFX)
         {
@@ -114,6 +119,8 @@ public partial class CameraRenderer
         
         //2.绘制天空盒
         context.DrawSkybox(camera);
+        
+        CopyAttachment();
 
         sortingSettings.criteria = SortingCriteria.CommonTransparent;
         drawingSettings.sortingSettings = sortingSettings;
@@ -192,6 +199,16 @@ public partial class CameraRenderer
         return false;
     }
 
+    void CopyAttachment()
+    {
+        if (useDepthTexture)
+        {
+            buffer.GetTemporaryRT(depthTextureId,camera.pixelWidth,camera.pixelHeight,32,FilterMode.Point,RenderTextureFormat.Depth);
+            buffer.CopyTexture(depthAttachmentId,depthTextureId);
+            ExecuteBuffer();
+        }
+    }
+    
     void Clearup()
     {
         lighting.Cleanup();
