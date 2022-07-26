@@ -18,10 +18,12 @@ struct Attributes {
 	UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 //片元函数输入结构体
-struct Varyings {
+struct Varyings 
+{
 	float4 positionCS : SV_POSITION;
 	float3 positionWS : VAR_POSITION;
 	float2 baseUV : VAR_BASE_UV;
+	float2 detailUV : VAR_DETIAIL_UV;
 	//世界法线
 	float3 normalWS : VAR_NORMAL;
 	GI_VARINGS_DATA
@@ -42,6 +44,7 @@ Varyings LitPassVertex(Attributes input){
 	output.normalWS = TransformObjectToWorldNormal(input.normalOS);
 	//计算缩放和偏移后的UV坐标
 	output.baseUV = TransformBaseUV(input.baseUV);
+	output.detailUV = TransformDetailUV(input.baseUV);
 	return output;
 }
 //片元函数
@@ -55,7 +58,7 @@ float4 LitPassFragment(Varyings input) : SV_TARGET {
 */
     ClipLOD(input.positionCS.xy,unity_LODFade.x);
     
-	float4 base = GetBase(input.baseUV);
+	float4 base = GetBase(input.baseUV,input.detailUV);
 #if defined(_CLIPPING)
 	//透明度低于阈值的片元进行舍弃
 	clip(base.a - GetCutoff(input.baseUV));

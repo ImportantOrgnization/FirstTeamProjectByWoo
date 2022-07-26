@@ -7,9 +7,13 @@ TEXTURE2D(_BaseMap);
 SAMPLER(sampler_BaseMap);
 TEXTURE2D(_EmissionMap);
 TEXTURE2D(_MaskMap);
+TEXTURE2D(_DetailMap);
+SAMPLER(sampler_DetailMap);
 
 UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
 UNITY_DEFINE_INSTANCED_PROP(float4, _BaseMap_ST)
+UNITY_DEFINE_INSTANCED_PROP(float4, _DetailMap_ST)  //DetailMap 有区别于baseMap的缩放偏移
+UNITY_DEFINE_INSTANCED_PROP(float , _DetailAlbedo)
 UNITY_DEFINE_INSTANCED_PROP(float4, _BaseColor)
 UNITY_DEFINE_INSTANCED_PROP(float, _Cutoff)
 UNITY_DEFINE_INSTANCED_PROP(float, _Metallic)
@@ -20,22 +24,40 @@ UNITY_DEFINE_INSTANCED_PROP(float, ZWrite)
 UNITY_DEFINE_INSTANCED_PROP(float, _Occlusion)
 UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
 
+float4 GetMask(float2 baseUV)
+{
+    return SAMPLE_TEXTURE2D(_MaskMap,sampler_BaseMap,baseUV);
+}
+
+
+float2 TransformDetailUV(float2 detailUV)
+{
+    float4 detailST = INPUT_PROP(_DetailMap_ST);
+    return detailUV * detailST.xy + detailST.zw;
+}
+
+float4 GetDetail(float2 detailUV)
+{
+    float4 map = SAMPLE_TEXTURE2D(_DetailMap,sampler_DetailMap,detailUV);
+    return map * 2.0 -1.0;
+}
+
 float2 TransformBaseUV(float2 baseUV)
 {
     float4 baseST = INPUT_PROP(_BaseMap_ST);
     return baseUV * baseST.xy + baseST.zw;
 }
 
-float4 GetBase(float2 baseUV)
+float4 GetBase(float2 baseUV , float2 detailUV = 0.0)
 {
     float4 map = SAMPLE_TEXTURE2D(_BaseMap,sampler_BaseMap,baseUV);
     float4 color = INPUT_PROP(_BaseColor);
+    float detail = GetDetail(detailUV).r * _DetailAlbedo;
+    float mask = GetMask(baseUV).b;
+    //map.rgb = lerp(map.rgb ,detail < 0.0 ? 0.0 : 1.0 , abs(detail));
+    map.rgb = lerp(sqrt(map.rgb) ,detail < 0.0 ? 0.0 : 1.0 , abs(detail) * mask);
+    map.rgb *= map.rgb;
     return map * color;
-}
-
-float4 GetMask(float2 baseUV)
-{
-    return SAMPLE_TEXTURE2D(_MaskMap,sampler_BaseMap,baseUV);
 }
 
 float GetCutoff(float2 baseUV)
