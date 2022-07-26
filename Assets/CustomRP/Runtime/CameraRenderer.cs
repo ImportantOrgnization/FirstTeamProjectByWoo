@@ -74,7 +74,7 @@ public partial class CameraRenderer
         DrawGizmosBeforeFX();
         if (postFxStack.IsActive)
         {
-            postFxStack.Render(frameBufferId);
+            postFxStack.Render(colorAttachmentId);
         }
         DrawGizmosAfterFX();
         
@@ -133,8 +133,9 @@ public partial class CameraRenderer
         context.Submit();
     }
 
-    private static int frameBufferId = Shader.PropertyToID("_CameraFrameBuffer");
-    
+    //private static int frameBufferId = Shader.PropertyToID("_CameraFrameBuffer");
+    private static int colorAttachmentId = Shader.PropertyToID("_CameraColorAttachment");
+    private static int depthAttachmentId = Shader.PropertyToID("_CameraDepthAttachment");
     /// <summary>
     /// 设置相机的属性和矩阵
     /// </summary>
@@ -151,8 +152,10 @@ public partial class CameraRenderer
                 flags = CameraClearFlags.Color;    //unity 会确保每帧开始时清理帧缓冲区，但是如果是自定义的纹理，结果就不一定，所以当启用特效时，应当最终清除颜色和深度缓冲
             }
 
-            buffer.GetTemporaryRT(frameBufferId, camera.pixelWidth, camera.pixelHeight, 32, FilterMode.Bilinear, useHDR ? RenderTextureFormat.DefaultHDR : RenderTextureFormat.Default);
-            buffer.SetRenderTarget(frameBufferId,RenderBufferLoadAction.DontCare,RenderBufferStoreAction.Store);
+            buffer.GetTemporaryRT(colorAttachmentId, camera.pixelWidth, camera.pixelHeight, 0, FilterMode.Bilinear, useHDR ? RenderTextureFormat.DefaultHDR : RenderTextureFormat.Default);
+            buffer.GetTemporaryRT(depthAttachmentId, camera.pixelWidth, camera.pixelHeight, 32, FilterMode.Point, RenderTextureFormat.Depth);
+            buffer.SetRenderTarget(colorAttachmentId,RenderBufferLoadAction.DontCare,RenderBufferStoreAction.Store,
+                depthAttachmentId,RenderBufferLoadAction.DontCare,RenderBufferStoreAction.Store);
         }
         
         //设置相机清除状态
@@ -194,7 +197,8 @@ public partial class CameraRenderer
         lighting.Cleanup();
         if (postFxStack.IsActive)
         {
-            buffer.ReleaseTemporaryRT(frameBufferId);
+            buffer.ReleaseTemporaryRT(colorAttachmentId);
+            buffer.ReleaseTemporaryRT(depthAttachmentId);
         }
     }
 }
