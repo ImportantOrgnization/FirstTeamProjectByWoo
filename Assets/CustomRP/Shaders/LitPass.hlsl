@@ -71,9 +71,10 @@ float4 LitPassFragment(Varyings input) : SV_TARGET {
     return unity_LODFade.x;
 #endif
 */
-    ClipLOD(input.positionCS.xy,unity_LODFade.x);
+    //ClipLOD(input.positionCS.xy,unity_LODFade.x);
     
-    InputConfig config = GetInputConfig(input.baseUV);
+    InputConfig config = GetInputConfig(input.positionCS, input.baseUV);
+    ClipLOD(config.fragment,unity_LODFade.x);
 #if defined(_DETAIL_MAP)
     config.detailUV = input.detailUV;
     config.useDetail = true;
@@ -106,7 +107,7 @@ float4 LitPassFragment(Varyings input) : SV_TARGET {
 	surface.smoothness = GetSmoothness(config);
 	surface.fresnelStrength = GetFresnel(config);
 	//计算抖动
-	surface.dither = InterleavedGradientNoise(input.positionCS.xy,0);
+	surface.dither = InterleavedGradientNoise(config.fragment.positionSS,0);
 	surface.renderingLayerMask = asuint(unity_RenderingLayer.x);
 	surface.occlusion = GetOcclusion(config);
 	//通过表面属性和BRDF计算最终光照结果

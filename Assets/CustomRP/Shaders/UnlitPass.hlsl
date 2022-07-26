@@ -18,7 +18,7 @@ struct Varyings {
 #if defined(_VERTEX_COLORS)
     float4 color : VAR_COLOR;
 #endif
-	float4 positionCS : SV_POSITION;
+	float4 positionCS_SS : SV_POSITION;
 	float2 baseUV : VAR_BASE_UV;
 #if defined(_FLIPBOOK_BLENDING)
     float3 flipbookUVB : VAR_FLIPBOOK;
@@ -35,7 +35,7 @@ Varyings UnlitPassVertex(Attributes input){
 	//使UnlitPassVertex输出位置和索引,并复制索引
 	UNITY_TRANSFER_INSTANCE_ID(input, output);
 	float3 positionWS = TransformObjectToWorld(input.positionOS);
-	output.positionCS = TransformWorldToHClip(positionWS);
+	output.positionCS_SS = TransformWorldToHClip(positionWS);
 #if defined(_VERTEX_COLORS)
     output.color = input.color;
 #endif
@@ -49,7 +49,7 @@ Varyings UnlitPassVertex(Attributes input){
 }
 //片元函数
 float4 UnlitPassFragment (Varyings input) : SV_TARGET {
-    InputConfig config = GetInputConfig(input.baseUV);
+    InputConfig config = GetInputConfig(input.positionCS_SS,input.baseUV);
 #if defined(_VERTEX_COLORS)
     config.color = input.color;
 #endif

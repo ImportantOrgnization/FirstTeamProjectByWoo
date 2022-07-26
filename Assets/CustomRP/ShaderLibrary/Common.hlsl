@@ -21,14 +21,6 @@ float DistanceSquared(float3 pA,float3 pB)
     return dot(pA - pB, pA - pB);
 }
 
-void ClipLOD(float2 positionCS, float fade)
-{
-#if defined(LOD_FADE_CROSSFADE)
-    float dither = InterleavedGradientNoise(positionCS.xy,0);
-    clip(fade + (fade < 0.0? dither : -dither));    //Lod过渡的时候，过渡的两个物体中有一个LOD Fade为负数
-#endif
-}
-
 #if defined(_SHADOW_MASK_DISTANCE) || defined(_SHADOW_MASK_ALWAYS)
     #define SHADOWS_SHADOWMASK
 #endif
@@ -36,6 +28,19 @@ void ClipLOD(float2 positionCS, float fade)
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/UnityInstancing.hlsl"
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/SpaceTransforms.hlsl"
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Packing.hlsl"
+
+SAMPLER(sampler_linear_clamp);
+SAMPLER(sampler_point_clamp);
+
+#include "Fragment.hlsl"
+
+void ClipLOD(Fragment fragment, float fade)
+{
+#if defined(LOD_FADE_CROSSFADE)
+    float dither = InterleavedGradientNoise(fragment.positionSS,0);
+    clip(fade + (fade < 0.0? dither : -dither));    //Lod过渡的时候，过渡的两个物体中有一个LOD Fade为负数
+#endif
+}
 
 //解码法线数据，得到原来的法线向量
 float3 DecodeNormal(float4 sample, float scale)

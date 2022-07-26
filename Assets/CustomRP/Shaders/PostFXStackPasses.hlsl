@@ -7,7 +7,6 @@
 bool _BloomBicubicUpsampling;   //将双三次滤波上采样选项作为可选项
 float _BloomIntensity;
 TEXTURE2D(_PostFXSource);
-SAMPLER(sampler_linear_clamp);
 
 struct Varyings
 {

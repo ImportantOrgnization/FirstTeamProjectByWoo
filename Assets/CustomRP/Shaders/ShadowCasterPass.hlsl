@@ -52,8 +52,9 @@ void ShadowCasterPassFragment(Varyings input)
 {
     
     UNITY_SETUP_INSTANCE_ID(input)
-    ClipLOD(input.positionCS.xy,unity_LODFade.x);
-    InputConfig config = GetInputConfig(input.baseUV,input.detailUV);
+    //ClipLOD(input.positionCS.xy,unity_LODFade.x);
+    InputConfig config = GetInputConfig(input.positionCS,input.baseUV,input.detailUV);
+    ClipLOD(config.fragment,unity_LODFade.x);
     float4 base = GetBase(config);
 #if defined (_SHADOWS_CLIP)
     //透明度低于阈值的片元进行舍弃
