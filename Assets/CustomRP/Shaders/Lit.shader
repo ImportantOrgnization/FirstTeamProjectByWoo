@@ -14,6 +14,7 @@
         //透明通道预乘
 	    [Toggle(_PREMULTIPLY_ALPHA)] _PremulAlpha("Premultiply Alpha", Float) = 0
 	    //遮罩纹理
+	    [Toggle(_MASK_MAP)] _MaskMapToggle("Mask Map",Float) = 0
 	    [NoScaleOffset] _MaskMap("Mask (MODS)",2D) = "white" {}
 	    _Occlusion ("Occlusion", Range(0,1)) = 1
         //金属度和光滑度
@@ -71,6 +72,7 @@
             #pragma shader_feature _RECEIVE_SHADOWS
             #pragma multi_compile _ LOD_FADE_CROSSFADE
             #pragma shader_feature _NORMAL_MAP
+            #pragma shader_feature _MASK_MAP
             //是否使用逐对象光源
             #pragma multi_compile _ _LIGHTS_PER_OBJECT
             #pragma vertex LitPassVertex

@@ -70,7 +70,10 @@ float4 LitPassFragment(Varyings input) : SV_TARGET {
     ClipLOD(input.positionCS.xy,unity_LODFade.x);
     
     InputConfig config = GetInputConfig(input.baseUV,input.detailUV);
-    
+#if defined(_MASK_MAP)
+    config.useMask = true; 
+#endif
+
 	float4 base = GetBase(config);
 #if defined(_CLIPPING)
 	//透明度低于阈值的片元进行舍弃

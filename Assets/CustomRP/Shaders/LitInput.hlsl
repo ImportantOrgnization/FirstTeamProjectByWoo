@@ -33,6 +33,7 @@ struct InputConfig
 {
     float2 baseUV;
     float2 detailUV;
+    bool useMask;
 };
 
 InputConfig GetInputConfig(float2 baseUV,float2 detailUV = 0.0)
@@ -40,12 +41,17 @@ InputConfig GetInputConfig(float2 baseUV,float2 detailUV = 0.0)
     InputConfig c;
     c.baseUV = baseUV;
     c.detailUV = detailUV;
+    c.useMask = false;
     return c;
 }
 
 float4 GetMask(InputConfig c)
 {
-    return SAMPLE_TEXTURE2D(_MaskMap,sampler_BaseMap,c.baseUV);
+    if(c.useMask)
+    {   
+        return SAMPLE_TEXTURE2D(_MaskMap,sampler_BaseMap,c.baseUV);
+    }
+    return 1.0;
 }
 
 
