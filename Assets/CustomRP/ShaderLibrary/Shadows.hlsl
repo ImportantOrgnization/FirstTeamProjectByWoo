@@ -182,7 +182,7 @@ float MixBakedAndRealtimeShadows(ShadowData global, float shadow, int shadowMask
 float GetCascadedShadow(DirectionalShadowData directional,ShadowData global,Surface surfaceWS)
 {
     //计算法线偏差
-    float3 normalBias = surfaceWS.normal * (directional.normalBias * _CascadeData[global.cascadeIndex].y);
+    float3 normalBias = surfaceWS.interpolatedNormal * (directional.normalBias * _CascadeData[global.cascadeIndex].y);
      //通过阴影转换矩阵和表面位置得到阴影纹理（图块）空间的位置，然后对图集进行采样
     float3 positionSTS = mul(_DirectionalShadowMatrices[directional.tileIndex],float4(surfaceWS.position + normalBias,1.0)).xyz;
     float shadow = FilterDirectionalShadow(positionSTS);
@@ -190,7 +190,7 @@ float GetCascadedShadow(DirectionalShadowData directional,ShadowData global,Surf
     //如果级联混合小于1，代表在级联层过渡区域中，必须从下一个级联中采样并在两个值之间进行插值
     if(global.cascadeBlend <1.0)
     {
-        normalBias = surfaceWS.normal * (directional.normalBias * _CascadeData[global.cascadeIndex + 1].y);
+        normalBias = surfaceWS.interpolatedNormal * (directional.normalBias * _CascadeData[global.cascadeIndex + 1].y);
         positionSTS = mul(_DirectionalShadowMatrices[directional.tileIndex + 1],float4(surfaceWS.position + normalBias,1.0)).xyz;  
         shadow = lerp(FilterDirectionalShadow(positionSTS) , shadow, global.cascadeBlend);
     }
