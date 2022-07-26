@@ -14,6 +14,8 @@ struct Attributes {
 	float2 baseUV : TEXCOORD0;
 	//表面法线
 	float3 normalOS : NORMAL;
+    //对象空间的切线
+	float4 tangentOS : TANGENT;
 	GI_ATTRIBUTE_DATA
 	UNITY_VERTEX_INPUT_INSTANCE_ID
 };
@@ -26,6 +28,8 @@ struct Varyings
 	float2 detailUV : VAR_DETIAIL_UV;
 	//世界法线
 	float3 normalWS : VAR_NORMAL;
+	//世界空间的切线
+	float4 tangentWS : VAR_TANGENT;
 	GI_VARINGS_DATA
 	UNITY_VERTEX_INPUT_INSTANCE_ID
 };
@@ -42,6 +46,8 @@ Varyings LitPassVertex(Attributes input){
 	output.positionCS = TransformWorldToHClip(output.positionWS);
 	//计算世界空间的法线
 	output.normalWS = TransformObjectToWorldNormal(input.normalOS);
+	//计算世界空间的切线
+	output.tangentWS = float4(TransformObjectToWorldDir(input.tangentOS.xyz),input.tangentOS.w);
 	//计算缩放和偏移后的UV坐标
 	output.baseUV = TransformBaseUV(input.baseUV);
 	output.detailUV = TransformDetailUV(input.baseUV);
@@ -66,7 +72,7 @@ float4 LitPassFragment(Varyings input) : SV_TARGET {
 	//定义一个surface并填充属性
 	Surface surface;
 	surface.position = input.positionWS;
-	surface.normal = normalize(input.normalWS);
+	surface.normal = NormalTangentToWorld(GetNormalTS(input.baseUV) , input.normalWS,input.tangentWS);
 	surface.interpolatedNormal = input.normalWS;
 	//得到视角方向
 	surface.viewDirection = normalize(_WorldSpaceCameraPos - input.positionWS);

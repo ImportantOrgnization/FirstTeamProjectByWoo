@@ -5,6 +5,7 @@
 
 TEXTURE2D(_BaseMap);
 SAMPLER(sampler_BaseMap);
+TEXTURE2D(_NormalMap);
 TEXTURE2D(_EmissionMap);
 TEXTURE2D(_MaskMap);
 TEXTURE2D(_DetailMap);
@@ -12,6 +13,7 @@ SAMPLER(sampler_DetailMap);
 
 UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
 UNITY_DEFINE_INSTANCED_PROP(float4, _BaseMap_ST)
+UNITY_DEFINE_INSTANCED_PROP(float, _NormalScale)
 UNITY_DEFINE_INSTANCED_PROP(float4, _DetailMap_ST)  //DetailMap 有区别于baseMap的缩放偏移
 UNITY_DEFINE_INSTANCED_PROP(float , _DetailAlbedo)
 UNITY_DEFINE_INSTANCED_PROP(float , _DetailSmoothness)
@@ -59,6 +61,15 @@ float4 GetBase(float2 baseUV , float2 detailUV = 0.0)
     map.rgb = lerp(sqrt(map.rgb) ,detail < 0.0 ? 0.0 : 1.0 , abs(detail) * mask);
     map.rgb *= map.rgb;
     return map * color;
+}
+
+//采样法线并解码法线向量
+float3 GetNormalTS(float2 baseUV)
+{
+    float4 map = SAMPLE_TEXTURE2D(_NormalMap,sampler_BaseMap,baseUV);
+    float scale = INPUT_PROP(_NormalScale);
+    float3 normal = DecodeNormal(map,scale);
+    return normal;
 }
 
 float GetCutoff(float2 baseUV)
