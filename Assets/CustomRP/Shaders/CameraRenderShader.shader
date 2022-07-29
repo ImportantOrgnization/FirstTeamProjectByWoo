@@ -29,7 +29,7 @@
             HLSLPROGRAM
             #pragma target 3.5
             #pragma vertex DefaultPassVertex
-            #pragma fragment CopyPassDepthFragment
+            #pragma fragment CopyDepthPassFragment
             ENDHLSL
         }
     }
