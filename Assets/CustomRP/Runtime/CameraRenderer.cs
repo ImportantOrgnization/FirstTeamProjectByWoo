@@ -37,14 +37,24 @@ public partial class CameraRenderer
 
     private Material material;
 
+    private Texture2D missingTexture;
+    
     public CameraRenderer(Shader shader)
     {
         material = CoreUtils.CreateEngineMaterial(shader);
+        missingTexture = new Texture2D(1,1)
+        {
+            hideFlags = HideFlags.HideAndDontSave,
+            name = "Missing",
+        };
+        missingTexture.SetPixel(0,0,Color.white * 0.5f);
+        missingTexture.Apply(true,true);
     }
 
     public void Dispose()
     {
         CoreUtils.Destroy(material);
+        CoreUtils.Destroy(missingTexture);
     }
 
     private static int sourceTextureId = Shader.PropertyToID("_SourceTexture");
@@ -206,7 +216,8 @@ public partial class CameraRenderer
         buffer.ClearRenderTarget(flags <= CameraClearFlags.Depth, flags == CameraClearFlags.Color, 
             flags == CameraClearFlags.Color ? camera.backgroundColor.linear : Color.clear);
         buffer.BeginSample(SampleName);  
-        buffer.SetGlobalVector("_MyCamPos",this.camera.transform.position);
+        //buffer.SetGlobalVector("_MyCamPos",this.camera.transform.position);
+        buffer.SetGlobalTexture(depthTextureId,missingTexture);
         ExecuteBuffer();
       
     }
