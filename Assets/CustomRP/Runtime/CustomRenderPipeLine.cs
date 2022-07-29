@@ -13,9 +13,9 @@ public partial class CustomRenderPipeline : RenderPipeline
     bool useLightsPerObject;
     private ShadowSettings shadowSettings;
     private PostFXSettings postFxSettings;
-    private bool allowHDR;
+    private CameraBufferSettings cameraBufferSettings;
     private int colorLUTResolution;
-    public CustomRenderPipeline(bool allowHDR, bool useDynamicBatching, bool useGPUInstancing, bool useSRPBatcher , bool useLightsPerObject , 
+    public CustomRenderPipeline(CameraBufferSettings cameraBufferSettings, bool useDynamicBatching, bool useGPUInstancing, bool useSRPBatcher , bool useLightsPerObject , 
         ShadowSettings shadowSettings,PostFXSettings postFxSettings,int colorLutResolution,Shader cameraRendererShader)
     {
         this.shadowSettings = shadowSettings;
@@ -23,7 +23,7 @@ public partial class CustomRenderPipeline : RenderPipeline
         this.useDynamicBatching = useDynamicBatching;
         this.useGPUInstancing = useGPUInstancing;
         this.useLightsPerObject = useLightsPerObject;
-        this.allowHDR = allowHDR;
+        this.cameraBufferSettings = cameraBufferSettings;
         this.colorLUTResolution = colorLutResolution;
         GraphicsSettings.useScriptableRenderPipelineBatching = useSRPBatcher;
         //灯光使用线性强度
@@ -36,7 +36,7 @@ public partial class CustomRenderPipeline : RenderPipeline
         //遍历所有相机单独渲染
         foreach (Camera camera in cameras)
         {
-            renderer.Render(context, camera,allowHDR, useDynamicBatching, useGPUInstancing,useLightsPerObject,shadowSettings,postFxSettings,colorLUTResolution);
+            renderer.Render(context, camera,cameraBufferSettings, useDynamicBatching, useGPUInstancing,useLightsPerObject,shadowSettings,postFxSettings,colorLUTResolution);
         }
     }
     

@@ -28,8 +28,13 @@ public partial class CustomRenderPipelineAsset : RenderPipelineAsset
     [SerializeField] 
     PostFXSettings postFxSettings = default;
 
-    //如果没有HDR，unity就会把缓冲设置为sRGB格式，这种格式的缓冲就像一个普通纹理一样，在写入缓冲前需要进行伽马矫正，在读取缓冲时需要进行一次解码操作
-    [SerializeField] private bool allowHDR = true;
+    [SerializeField]
+    CameraBufferSettings cameraBuffer = new CameraBufferSettings
+    {
+        //如果没有HDR，unity就会把缓冲设置为sRGB格式，这种格式的缓冲就像一个普通纹理一样，在写入缓冲前需要进行伽马矫正，在读取缓冲时需要进行一次解码操作
+        allowHDR = true,    
+    };
+    
     
     //LUT分辨率
     [SerializeField] private ColorLUTResolution colorLUTResolution = ColorLUTResolution._32;
@@ -39,7 +44,7 @@ public partial class CustomRenderPipelineAsset : RenderPipelineAsset
     //重写抽象方法，需要返回一个RenderPipeline实例对象
     protected override RenderPipeline CreatePipeline()
     {
-        return new CustomRenderPipeline(allowHDR, useDynamicBatching, useGPUInstancing, useSRPBatcher,useLightsPerObject,
+        return new CustomRenderPipeline(cameraBuffer, useDynamicBatching, useGPUInstancing, useSRPBatcher,useLightsPerObject,
             shadows,postFxSettings,(int)colorLUTResolution,cameraRendererShader);
     }
 }

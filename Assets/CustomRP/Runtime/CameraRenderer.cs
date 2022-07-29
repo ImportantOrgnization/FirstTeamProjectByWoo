@@ -59,7 +59,7 @@ public partial class CameraRenderer
     /// <summary>
     /// 相机渲染
     /// </summary>
-    public void Render(ScriptableRenderContext context, Camera camera,bool allowHDR,
+    public void Render(ScriptableRenderContext context, Camera camera,CameraBufferSettings bufferSettings,
         bool useDynamicBatching, bool useGPUInstancing,bool useLightsPerObject,
         ShadowSettings shadowSettings,PostFXSettings postFxSettings,int colorLUTResolution)
     {
@@ -68,7 +68,15 @@ public partial class CameraRenderer
         var crpCamera = camera.GetComponent<CustomRenderPipelineCamera>();
         CameraSettings cameraSettings = crpCamera ? crpCamera.Settings : defaultCameraSettings;
 
-        useDepthTexture = true;
+        //useDepthTexture = true;
+        if (camera.cameraType == CameraType.Reflection)
+        {
+            useDepthTexture = bufferSettings.copyDepthReflection;
+        }
+        else
+        {
+            useDepthTexture = bufferSettings.copyDepth && cameraSettings.copyDepth;
+        }
         
         //如果需要覆盖后处理配置，将渲染管线的后处理配置替换成该相机的后处理配置
         if (cameraSettings.overridePostFX)
@@ -85,7 +93,7 @@ public partial class CameraRenderer
         {
             return;
         }
-        useHDR = allowHDR && camera.allowHDR;
+        useHDR = bufferSettings.allowHDR && camera.allowHDR;
         
         buffer.BeginSample(SampleName);
         ExecuteBuffer();

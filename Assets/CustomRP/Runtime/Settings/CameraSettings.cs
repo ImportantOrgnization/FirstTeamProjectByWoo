@@ -12,6 +12,8 @@ public class CameraSettings
     
     [Tooltip("灯光遮罩")]
     public bool maskLights = false;
+
+    public bool copyDepth = true;
     
     [Serializable]
     public struct FinalBlendMode
