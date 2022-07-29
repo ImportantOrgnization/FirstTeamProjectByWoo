@@ -1,17 +1,25 @@
 ﻿#ifndef FRAGMENT_INCLUDED
 #define FRAGMENT_INCLUDED
 
+TEXTURE2D(_CameraDepthTexture);
+
 struct Fragment
 {
     float2 positionSS;
-    float depth;
+    float depth;        //当前片元的实际深度
+    float2 screenUV;
+    //深度缓冲
+    float bufferDepth;  //存在buffer中老的深度
 };
 
 Fragment GetFragment(float4 positionSS)
 {
     Fragment f;
     f.positionSS = positionSS.xy;
-    f.depth = IsOrthographicCamera()? OrthographicDepthBufferToLinear(positionSS.z) : positionSS.w;
+    f.screenUV = f.positionSS / _ScreenParams.xy;
+    f.depth = IsOrthographicCamera()? OrthographicDepthBufferToLinear(positionSS.z) : positionSS.w; //positionSS.z is rawDepth, 新frag的深度
+    f.bufferDepth = SAMPLE_DEPTH_TEXTURE_LOD(_CameraDepthTexture,sampler_point_clamp,f.screenUV,0);
+    f.bufferDepth = IsOrthographicCamera() ? OrthographicDepthBufferToLinear(f.bufferDepth) : LinearEyeDepth(f.bufferDepth,_ZBufferParams); //老frag的深度
     return f;
 }
 

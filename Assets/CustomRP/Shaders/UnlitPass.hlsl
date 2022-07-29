@@ -50,7 +50,8 @@ Varyings UnlitPassVertex(Attributes input){
 //片元函数
 float4 UnlitPassFragment (Varyings input) : SV_TARGET {
     InputConfig config = GetInputConfig(input.positionCS_SS,input.baseUV);
-    //return config.fragment.depth.xxxx/20.0;   测试片元深度
+    // return config.fragment.screenUV;
+    return config.fragment.bufferDepth.xxxx/20.0;   //测试片元深度
 #if defined(_VERTEX_COLORS)
     config.color = input.color;
 #endif

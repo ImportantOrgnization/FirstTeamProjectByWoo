@@ -74,7 +74,8 @@ float4 LitPassFragment(Varyings input) : SV_TARGET {
     //ClipLOD(input.positionCS.xy,unity_LODFade.x);
     
     InputConfig config = GetInputConfig(input.positionCS, input.baseUV);
-    //return config.fragment.depth.xxxx/20.0;   测试片元深度
+    //return float4(config.fragment.screenUV,0,0);
+    //return config.fragment.bufferDepth.xxxx /20.0 ;   //测试片元深度
     ClipLOD(config.fragment,unity_LODFade.x);
 #if defined(_DETAIL_MAP)
     config.detailUV = input.detailUV;

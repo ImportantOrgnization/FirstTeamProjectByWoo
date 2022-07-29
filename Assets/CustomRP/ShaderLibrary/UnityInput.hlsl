@@ -36,6 +36,9 @@ float4 _ProjectionParams;
 //正交相机信息
 float4 unity_OrthoParams;
 
+float4 _ScreenParams;
+float4 _ZBufferParams;
+
 CBUFFER_END
 //相机位置
 float3 _WorldSpaceCameraPos;    //将相机位置放在 UnityPerDraw 缓存区中，如果打开SRP Batcher 会造成这个值不停在闪的现象
