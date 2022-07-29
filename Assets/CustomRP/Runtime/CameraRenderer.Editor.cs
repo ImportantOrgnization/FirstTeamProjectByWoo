@@ -60,7 +60,12 @@ public partial class CameraRenderer
     {
         if (Handles.ShouldRenderGizmos())
         {
-            context.DrawGizmos(camera,GizmoSubset.PreImageEffects);
+            if (useIntermediateBuffer)
+            {
+                Draw(depthAttachmentId, BuiltinRenderTextureType.CameraTarget, true);
+                ExecuteBuffer();
+            }
+            context.DrawGizmos(camera, GizmoSubset.PreImageEffects);
         }
     }
 
