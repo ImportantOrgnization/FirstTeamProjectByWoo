@@ -14,7 +14,7 @@ public class CameraSettings
     public bool maskLights = false;
 
     public bool copyDepth = true;
-    
+    public bool copyColor = true;
     [Serializable]
     public struct FinalBlendMode
     {
