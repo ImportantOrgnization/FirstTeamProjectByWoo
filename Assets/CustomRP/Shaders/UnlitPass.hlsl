@@ -74,7 +74,11 @@ float4 UnlitPassFragment (Varyings input) : SV_TARGET {
 	float4 base = baseMap * baseColor;
 #if defined(_CLIPPING)
 	//透明度低于阈值的片元进行舍弃
-	clip(base.a - UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Cutoff));
+	clip(base.a - GetCutoff(config));
+#endif
+#if defined(_DISTORTION)
+    float2 distortion = GetDistortion(config);
+    base = GetBufferColor(config.fragment,distortion);
 #endif
 	return float4(base.rgb , GetFinalAlpha(base.a));
 }
