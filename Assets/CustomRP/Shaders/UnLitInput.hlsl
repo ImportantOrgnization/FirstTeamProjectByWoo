@@ -20,6 +20,7 @@ UNITY_DEFINE_INSTANCED_PROP(float, _NearFadeRange)
 UNITY_DEFINE_INSTANCED_PROP(float, _SoftParticlesDistance)
 UNITY_DEFINE_INSTANCED_PROP(float, _SoftParticlesRange)
 UNITY_DEFINE_INSTANCED_PROP(float, _DistortionStrength)
+UNITY_DEFINE_INSTANCED_PROP(float, _DistortionBlend)
 UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
 
 struct InputConfig
@@ -109,6 +110,11 @@ float2 GetDistortion(InputConfig c)
         rawMap = lerp(rawMap,SAMPLE_TEXTURE2D(_DistortionMap,sampler_DistortionMap,c.flipbookUVB.xy),c.flipbookUVB.z);
     }
     return DecodeNormal(rawMap,INPUT_PROP(_DistortionStrength)).xy;
+}
+
+float GetDistortionBlend(InputConfig c)
+{
+    return INPUT_PROP(_DistortionBlend);
 }
 
 #endif
