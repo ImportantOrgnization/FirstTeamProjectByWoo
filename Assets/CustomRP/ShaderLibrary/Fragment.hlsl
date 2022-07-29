@@ -2,6 +2,7 @@
 #define FRAGMENT_INCLUDED
 
 TEXTURE2D(_CameraDepthTexture);
+TEXTURE2D(_CameraColorTexture);
 
 struct Fragment
 {
@@ -11,6 +12,12 @@ struct Fragment
     //深度缓冲
     float bufferDepth;  //存在buffer中老的深度
 };
+
+float4 GetBufferColor(Fragment fragment, float2 uvOffset = float2(0.0,0.0))
+{
+    float2 uv = fragment.screenUV + uvOffset;
+    return SAMPLE_TEXTURE2D_LOD(_CameraColorTexture,sampler_CameraColorTexture,uv,0);
+}
 
 Fragment GetFragment(float4 positionSS)
 {

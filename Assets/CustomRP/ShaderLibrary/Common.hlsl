@@ -31,6 +31,7 @@ float DistanceSquared(float3 pA,float3 pB)
 
 SAMPLER(sampler_linear_clamp);
 SAMPLER(sampler_point_clamp);
+SAMPLER(sampler_CameraColorTexture);
 
 //根据unity_OrthographicCamera的w分量判断是否为正交相机
 bool IsOrthographicCamera()
