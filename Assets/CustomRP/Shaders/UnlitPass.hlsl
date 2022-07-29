@@ -51,7 +51,7 @@ Varyings UnlitPassVertex(Attributes input){
 float4 UnlitPassFragment (Varyings input) : SV_TARGET {
     InputConfig config = GetInputConfig(input.positionCS_SS,input.baseUV);
     // return config.fragment.screenUV;
-    return config.fragment.bufferDepth.xxxx/20.0;   //测试片元深度
+    //return config.fragment.bufferDepth.xxxx/20.0;   //测试片元深度
 #if defined(_VERTEX_COLORS)
     config.color = input.color;
 #endif
@@ -62,6 +62,10 @@ float4 UnlitPassFragment (Varyings input) : SV_TARGET {
 #if defined(_NEAR_FADE)
     config.nearFade = true;
 #endif
+#if defined(_SOFT_PARTICLES)
+    config.softParticles = true;
+#endif
+
 	UNITY_SETUP_INSTANCE_ID(input);
     //float4 baseMap = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.baseUV);
     float4 baseMap = GetBase(config);
