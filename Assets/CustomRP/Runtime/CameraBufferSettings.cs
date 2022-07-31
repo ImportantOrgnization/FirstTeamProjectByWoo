@@ -10,4 +10,5 @@ public struct CameraBufferSettings
     public bool copyDepthReflection;
     public bool copyColor;
     public bool copyColorReflection;
+    [Range(0.1f, 2f)] public float renderScale;
 }

@@ -86,6 +86,8 @@ public partial class CameraRenderer
         {
             //如果切换到了Scene视图，调用此方法完成绘制
             ScriptableRenderContext.EmitWorldGeometryForSceneView(camera);
+            //场景视图禁止渲染缩放
+            useScaleRendering = false;
         }
     }
 

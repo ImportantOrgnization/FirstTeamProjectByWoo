@@ -43,6 +43,8 @@ public partial class CameraRenderer
 
     private static int colorTextureId = Shader.PropertyToID("_CameraColorTexture");
     private bool useColorTexture;
+
+    private bool useScaleRendering;
     
     public CameraRenderer(Shader shader)
     {
@@ -100,7 +102,9 @@ public partial class CameraRenderer
         {
             postFxSettings = cameraSettings.postFxSettings;
         }
-        
+
+        float renderScale = bufferSettings.renderScale;
+        useScaleRendering = renderScale < 0.99f || renderScale > 1.01f;
         //设置buffer缓冲区的名字
         PrepareBuffer();
         // 在Game视图绘制的几何体也绘制到Scene视图中
@@ -208,7 +212,7 @@ public partial class CameraRenderer
         //得到相机的clear flags
         CameraClearFlags flags = camera.clearFlags;
 
-        useIntermediateBuffer = useColorTexture || useDepthTexture || postFxStack.IsActive;
+        useIntermediateBuffer = useScaleRendering || useColorTexture || useDepthTexture || postFxStack.IsActive;
         if (useIntermediateBuffer)
         {
             if (flags > CameraClearFlags.Color)
