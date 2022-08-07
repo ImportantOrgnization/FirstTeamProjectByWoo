@@ -108,7 +108,7 @@ public partial class CameraRenderer
             postFxSettings = cameraSettings.postFxSettings;
         }
 
-        float renderScale = bufferSettings.renderScale;
+        float renderScale = cameraSettings.GetRenderScale(bufferSettings.renderScale);
         useScaleRendering = renderScale < 0.99f || renderScale > 1.01f;
         //设置buffer缓冲区的名字
         PrepareBuffer();
@@ -124,6 +124,7 @@ public partial class CameraRenderer
         //按比例缩放相机屏幕像素尺寸
         if (useScaleRendering)
         {
+            renderScale = Mathf.Clamp(renderScale, 0.1f, 2f);
             bufferSize.x = (int) (camera.pixelWidth * renderScale);
             bufferSize.y = (int) (camera.pixelHeight * renderScale);
         }
