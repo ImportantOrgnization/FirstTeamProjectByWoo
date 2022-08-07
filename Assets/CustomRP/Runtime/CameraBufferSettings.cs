@@ -25,6 +25,15 @@ public struct CameraBufferSettings
         public bool enabled;
         [Range(0.0312f, 0.0833f)]
         public float fixedThreshold;
+        
+        // The minimum amount of local contrast required to apply algorithm.
+        //   0.333 - too little (faster)
+        //   0.250 - low quality
+        //   0.166 - default
+        //   0.125 - high quality 
+        //   0.063 - overkill (slower)
+        [Range(0.063f, 0.333f)]
+        public float relativeThreshold;
     }
 
     public FXAA fxaa;

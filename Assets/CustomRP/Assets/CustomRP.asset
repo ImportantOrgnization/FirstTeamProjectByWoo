@@ -42,7 +42,8 @@ MonoBehaviour:
     bicubicRescaling: 2
     fxaa:
       enabled: 1
-      fixedThreshold: 0.0604
+      fixedThreshold: 0.0564
+      relativeThreshold: 0.208
   colorLUTResolution: 64
   cameraRendererShader: {fileID: 4800000, guid: 16fcb5eddabeaa146aa01c66128c097b,
     type: 3}
