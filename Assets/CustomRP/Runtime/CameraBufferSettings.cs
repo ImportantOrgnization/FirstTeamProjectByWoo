@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -17,5 +18,13 @@ public struct CameraBufferSettings
     {
         Off,UpOnly,UpAndDown,
     }
-    
+
+    [Serializable]
+    public struct FXAA
+    {
+        public bool enabled;
+    }
+
+    public FXAA fxaa;
+
 }

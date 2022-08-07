@@ -44,6 +44,8 @@ public partial class PostFXStack
     //纹理标识符
     private int bloomPyramidId;
 
+    private CameraBufferSettings.FXAA fxaa;
+    
     public PostFXStack()
     {
         bloomPyramidId = Shader.PropertyToID("_BloomPyramid0"); //只跟踪第一个标识符
@@ -61,8 +63,11 @@ public partial class PostFXStack
     private CameraBufferSettings.BicubicRescalingMode bicubicRescaling;
     
     public void Setup(ScriptableRenderContext context, Camera camera,Vector2Int bufferSize ,PostFXSettings settings,bool useHDR,
-        int colorLUTResolution,CameraSettings.FinalBlendMode finalBlendMode,CameraBufferSettings.BicubicRescalingMode bicubicRescaling)
+        int colorLUTResolution,CameraSettings.FinalBlendMode finalBlendMode,
+        CameraBufferSettings.BicubicRescalingMode bicubicRescaling,
+        CameraBufferSettings.FXAA fxaa)
     {
+        this.fxaa = fxaa;
         this.bufferSize = bufferSize;
         this.colorLUTResolution = colorLUTResolution;
         this.useHDR = useHDR;

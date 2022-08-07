@@ -46,4 +46,6 @@ public class CameraSettings
         return renderScaleMode == RenderScaleMode.Inherit ? scale :
             renderScaleMode == RenderScaleMode.Override ? renderScale : scale * renderScale;
     }
+
+    public bool allowFXAA = false;
 }
