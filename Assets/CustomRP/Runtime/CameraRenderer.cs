@@ -46,6 +46,9 @@ public partial class CameraRenderer
 
     private bool useScaleRendering;
     
+    //最终使用的缓冲区大小
+    private Vector2Int bufferSize;
+    
     public CameraRenderer(Shader shader)
     {
         material = CoreUtils.CreateEngineMaterial(shader);
@@ -115,6 +118,18 @@ public partial class CameraRenderer
             return;
         }
         useHDR = bufferSettings.allowHDR && camera.allowHDR;
+        
+        //按比例缩放相机屏幕像素尺寸
+        if (useScaleRendering)
+        {
+            bufferSize.x = (int) (camera.pixelWidth * renderScale);
+            bufferSize.y = (int) (camera.pixelHeight * renderScale);
+        }
+        else
+        {
+            bufferSize.x = camera.pixelWidth;
+            bufferSize.y = camera.pixelHeight;
+        }
         
         buffer.BeginSample(SampleName);
         ExecuteBuffer();
@@ -220,8 +235,8 @@ public partial class CameraRenderer
                 flags = CameraClearFlags.Color;    //unity 会确保每帧开始时清理帧缓冲区，但是如果是自定义的纹理，结果就不一定，所以当启用特效时，应当最终清除颜色和深度缓冲
             }
 
-            buffer.GetTemporaryRT(colorAttachmentId, camera.pixelWidth, camera.pixelHeight, 0, FilterMode.Bilinear, useHDR ? RenderTextureFormat.DefaultHDR : RenderTextureFormat.Default);
-            buffer.GetTemporaryRT(depthAttachmentId, camera.pixelWidth, camera.pixelHeight, 32, FilterMode.Point, RenderTextureFormat.Depth);
+            buffer.GetTemporaryRT(colorAttachmentId, bufferSize.x, bufferSize.y, 0, FilterMode.Bilinear, useHDR ? RenderTextureFormat.DefaultHDR : RenderTextureFormat.Default);
+            buffer.GetTemporaryRT(depthAttachmentId, bufferSize.x, bufferSize.y, 32, FilterMode.Point, RenderTextureFormat.Depth);
             buffer.SetRenderTarget(colorAttachmentId,RenderBufferLoadAction.DontCare,RenderBufferStoreAction.Store,
                 depthAttachmentId,RenderBufferLoadAction.DontCare,RenderBufferStoreAction.Store);
         }
@@ -266,7 +281,7 @@ public partial class CameraRenderer
     {
         if (useColorTexture)
         {
-            buffer.GetTemporaryRT(colorTextureId,camera.pixelWidth,camera.pixelHeight,0,FilterMode.Bilinear,
+            buffer.GetTemporaryRT(colorTextureId,bufferSize.x,bufferSize.y,0,FilterMode.Bilinear,
                 useHDR? RenderTextureFormat.DefaultHDR: RenderTextureFormat.Default);
             if (copyTextureSupported)
             {
@@ -280,7 +295,7 @@ public partial class CameraRenderer
         
         if (useDepthTexture)
         {
-            buffer.GetTemporaryRT(depthTextureId,camera.pixelWidth,camera.pixelHeight,32,FilterMode.Point,RenderTextureFormat.Depth);
+            buffer.GetTemporaryRT(depthTextureId,bufferSize.x,bufferSize.y,32,FilterMode.Point,RenderTextureFormat.Depth);
 
             if (copyTextureSupported)
             {
