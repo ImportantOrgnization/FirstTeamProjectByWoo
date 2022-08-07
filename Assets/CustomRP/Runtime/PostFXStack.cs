@@ -55,8 +55,10 @@ public partial class PostFXStack
     private bool useHDR;
     private int colorLUTResolution;
     private CameraSettings.FinalBlendMode finalBlendMode;
-    public void Setup(ScriptableRenderContext context, Camera camera, PostFXSettings settings,bool useHDR,int colorLUTResolution,CameraSettings.FinalBlendMode finalBlendMode)
+    private Vector2Int bufferSize;
+    public void Setup(ScriptableRenderContext context, Camera camera,Vector2Int bufferSize ,PostFXSettings settings,bool useHDR,int colorLUTResolution,CameraSettings.FinalBlendMode finalBlendMode)
     {
+        this.bufferSize = bufferSize;
         this.colorLUTResolution = colorLUTResolution;
         this.useHDR = useHDR;
         this.context = context;
@@ -114,7 +116,20 @@ public partial class PostFXStack
     bool DoBloom(int sourceId)
     {
         PostFXSettings.BloomSettings bloom = settings.Bloom;
-        int width = camera.pixelWidth / 2, height = camera.pixelHeight / 2;
+
+        int width, height;
+        if (bloom.ignoreRenderScale)
+        {
+            width = camera.pixelWidth / 2;
+            height = camera.pixelHeight / 2;    
+        }
+        else
+        {    
+            width = bufferSize.x / 2;
+            height = bufferSize.y / 2;    
+        }
+        
+        
         
         //如果跳过bloom，则用CopyPass作为替代
         if (bloom.maxIterations == 0 || bloom.intensity <= 0f || height < bloom.downscaleLimit * 2 || width < bloom.downscaleLimit * 2)

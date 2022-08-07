@@ -137,7 +137,7 @@ public partial class CameraRenderer
         buffer.SetGlobalVector(bufferSizeId,new Vector4( 1f/ bufferSize.x,1f / bufferSize.y,bufferSize.x ,bufferSize.y));
         ExecuteBuffer();
         lighting.Setup(context, cullingResults,shadowSettings,useLightsPerObject,cameraSettings.maskLights?cameraSettings.renderingLayerMask : -1 );
-        postFxStack.Setup(context,camera,postFxSettings,useHDR,colorLUTResolution,cameraSettings.finalBlendMode);
+        postFxStack.Setup(context,camera,bufferSize,postFxSettings,useHDR,colorLUTResolution,cameraSettings.finalBlendMode);
         buffer.EndSample(SampleName);
         
         Setup();

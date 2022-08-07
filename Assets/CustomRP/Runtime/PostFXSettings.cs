@@ -37,7 +37,9 @@ public class PostFXSettings : ScriptableObject
         [Range(0f, 1f)] public float thresholdKnee;
         [Min(0f)] public float intensity;
         //淡化闪烁,类似于萤火虫闪烁，能够起点效果，但不能根治
-        public bool fadeFireflies;    
+        public bool fadeFireflies;
+        //是否忽略渲染缩放
+        public bool ignoreRenderScale;
     }
 
     [SerializeField] private BloomSettings bloom = new BloomSettings
