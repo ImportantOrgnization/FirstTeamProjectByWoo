@@ -7,6 +7,7 @@
 bool _BloomBicubicUpsampling;   //将双三次滤波上采样选项作为可选项
 float _BloomIntensity;
 TEXTURE2D(_PostFXSource);
+bool _bicubicRescaling;
 
 struct Varyings
 {
@@ -327,6 +328,19 @@ float4 FinalPassFragment(Varyings input) : SV_TARGET
     float4 color = GetSource(input.screenUV);
     color.rgb = ApplyColorGradingLUT(color.rgb);
     return color;
+}
+
+bool _CopyBicubic;
+float4 FinalPassFragmentRescale(Varyings input) : SV_TARGET
+{
+    if(_CopyBicubic)
+    {
+        return GetSourceBiCubic(input.screenUV);
+    }
+    else
+    {
+        return GetSource(input.screenUV);
+    }
 }
 
 #endif

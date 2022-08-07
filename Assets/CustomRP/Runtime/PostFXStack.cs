@@ -57,7 +57,11 @@ public partial class PostFXStack
     private int colorLUTResolution;
     private CameraSettings.FinalBlendMode finalBlendMode;
     private Vector2Int bufferSize;
-    public void Setup(ScriptableRenderContext context, Camera camera,Vector2Int bufferSize ,PostFXSettings settings,bool useHDR,int colorLUTResolution,CameraSettings.FinalBlendMode finalBlendMode)
+    private int copyBicubicId = Shader.PropertyToID("_CopyBicubic");
+    private CameraBufferSettings.BicubicRescalingMode bicubicRescaling;
+    
+    public void Setup(ScriptableRenderContext context, Camera camera,Vector2Int bufferSize ,PostFXSettings settings,bool useHDR,
+        int colorLUTResolution,CameraSettings.FinalBlendMode finalBlendMode,CameraBufferSettings.BicubicRescalingMode bicubicRescaling)
     {
         this.bufferSize = bufferSize;
         this.colorLUTResolution = colorLUTResolution;
@@ -66,6 +70,7 @@ public partial class PostFXStack
         this.camera = camera;
         this.settings = camera.cameraType <= CameraType.SceneView ? settings : null;    //只渲染enum的前两个，即 GameView 和SceneView
         this.finalBlendMode = finalBlendMode;
+        this.bicubicRescaling = bicubicRescaling;
         ApplySceneViewState();
     }
 
@@ -318,6 +323,9 @@ public partial class PostFXStack
             buffer.SetGlobalFloat(finalDstBlendId,0f);
             buffer.GetTemporaryRT(finalResultId,bufferSize.x,bufferSize.y , 0 ,FilterMode.Bilinear,RenderTextureFormat.Default);
             Draw(sourceId,finalResultId,Pass.Final);
+            bool bicubicSampling = bicubicRescaling == CameraBufferSettings.BicubicRescalingMode.UpAndDown ||
+                                   bicubicRescaling == CameraBufferSettings.BicubicRescalingMode.UpOnly && bufferSize.x < camera.pixelWidth;
+            buffer.SetGlobalFloat(copyBicubicId,bicubicSampling?1f:0f);
             DrawFinal(finalResultId,Pass.FinalRescale);
             buffer.ReleaseTemporaryRT(finalResultId);
         }

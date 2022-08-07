@@ -142,7 +142,7 @@
 			HLSLPROGRAM
 				#pragma target 3.5
 				#pragma vertex DefaultPassVertex
-				#pragma fragment CopyPassFragment
+				#pragma fragment FinalPassFragmentRescale
 			ENDHLSL
 		}
     }
