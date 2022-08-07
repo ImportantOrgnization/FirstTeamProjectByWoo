@@ -304,6 +304,7 @@ public partial class PostFXStack
     private int colorGradingLUTInLogId = Shader.PropertyToID("_ColorGradingLUTInLogC");
     private int colorGradingResultId = Shader.PropertyToID("_ColrGradingResult");
     private int finalResultId = Shader.PropertyToID("_FinalResultId");
+    private int fxaaConfigId = Shader.PropertyToID("_FXAAConfig");
     void DoFinal(int sourceId)
     {
         ConfigureColorAdjustments();
@@ -326,6 +327,7 @@ public partial class PostFXStack
         buffer.SetGlobalFloat(finalDstBlendId,0f);
         if (fxaa.enabled)
         {
+            buffer.SetGlobalVector(fxaaConfigId, new Vector4(fxaa.fixedThreshold, 0f));
             buffer.GetTemporaryRT(colorGradingResultId,bufferSize.x,bufferSize.y,0,FilterMode.Bilinear,RenderTextureFormat.Default);
             Draw(sourceId,colorGradingResultId, keepAlpha ?  Pass.ApplyColorGrading : Pass.ApplyColorGradingWithLuma);
         }

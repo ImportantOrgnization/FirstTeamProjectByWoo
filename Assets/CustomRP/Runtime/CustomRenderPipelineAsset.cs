@@ -34,6 +34,9 @@ public partial class CustomRenderPipelineAsset : RenderPipelineAsset
         //如果没有HDR，unity就会把缓冲设置为sRGB格式，这种格式的缓冲就像一个普通纹理一样，在写入缓冲前需要进行伽马矫正，在读取缓冲时需要进行一次解码操作
         allowHDR = true,  
         renderScale = 1f,
+        fxaa = new CameraBufferSettings.FXAA {
+            fixedThreshold = 0.0833f
+        }
     };
     
     
