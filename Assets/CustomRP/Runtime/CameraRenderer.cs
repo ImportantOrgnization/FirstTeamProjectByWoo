@@ -48,6 +48,8 @@ public partial class CameraRenderer
     
     //最终使用的缓冲区大小
     private Vector2Int bufferSize;
+
+    private static int bufferSizeId = Shader.PropertyToID("_CameraBufferSize");
     
     public CameraRenderer(Shader shader)
     {
@@ -132,6 +134,7 @@ public partial class CameraRenderer
         }
         
         buffer.BeginSample(SampleName);
+        buffer.SetGlobalVector(bufferSizeId,new Vector4( 1f/ bufferSize.x,1f / bufferSize.y,bufferSize.x ,bufferSize.y));
         ExecuteBuffer();
         lighting.Setup(context, cullingResults,shadowSettings,useLightsPerObject,cameraSettings.maskLights?cameraSettings.renderingLayerMask : -1 );
         postFxStack.Setup(context,camera,postFxSettings,useHDR,colorLUTResolution,cameraSettings.finalBlendMode);
