@@ -25,6 +25,7 @@ public partial class PostFXStack
         ColorGradingNeutral,
         ColorGradingACES,
         Final,
+        FinalRescale,
     }
 
     public bool IsActive => settings != null;
@@ -96,7 +97,7 @@ public partial class PostFXStack
 
     private int finalSrcBlendId = Shader.PropertyToID("_FinalSrcBlend");
     private int finalDstBlendId = Shader.PropertyToID("_FinalDstBlend");
-    void DrawFinal(RenderTargetIdentifier from)
+    void DrawFinal(RenderTargetIdentifier from,Pass pass)
     {
         buffer.SetGlobalFloat(finalSrcBlendId,(float)finalBlendMode.source);
         buffer.SetGlobalFloat(finalDstBlendId,(float)finalBlendMode.destination);
@@ -108,7 +109,7 @@ public partial class PostFXStack
             RenderBufferStoreAction.Store);
             //RenderBufferLoadAction.DontCare,RenderBufferStoreAction.Store);    //加载目标缓冲区
         buffer.SetViewport(camera.pixelRect);
-        buffer.DrawProcedural(Matrix4x4.identity, settings.Material,(int) Pass.Final,MeshTopology.Triangles,3);
+        buffer.DrawProcedural(Matrix4x4.identity, settings.Material,(int) pass,MeshTopology.Triangles,3);
     }
     
     private int bloomBicubicUpsamplingId = Shader.PropertyToID("_BloomBicubicUpsampling");
@@ -287,6 +288,7 @@ public partial class PostFXStack
     private int colorGradingLUTId = Shader.PropertyToID("_ColorGradingLUT");
     private int colorGradingLUTParameterId = Shader.PropertyToID("_ColorGradingLUTParameters");
     private int colorGradingLUTInLogId = Shader.PropertyToID("_ColorGradingLUTInLogC");
+    private int finalResultId = Shader.PropertyToID("_FinalResultId");
     void DoColorGradingAndToneMapping(int sourceId)
     {
         ConfigureColorAdjustments();
@@ -306,7 +308,20 @@ public partial class PostFXStack
         Draw(sourceId,colorGradingLUTId,pass);
         buffer.SetGlobalVector(colorGradingLUTParameterId,new Vector4(1f/lutWidth,1f/lutHeight,lutHeight - 1f));
         //Draw(sourceId,BuiltinRenderTextureType.CameraTarget,Pass.Final);
-        DrawFinal(sourceId);
+        if (bufferSize.x == camera.pixelWidth)
+        {
+            DrawFinal(sourceId,Pass.Final);
+        }
+        else
+        {
+            buffer.SetGlobalFloat(finalSrcBlendId,1f);
+            buffer.SetGlobalFloat(finalDstBlendId,0f);
+            buffer.GetTemporaryRT(finalResultId,bufferSize.x,bufferSize.y , 0 ,FilterMode.Bilinear,RenderTextureFormat.Default);
+            Draw(sourceId,finalResultId,Pass.Final);
+            DrawFinal(finalResultId,Pass.FinalRescale);
+            buffer.ReleaseTemporaryRT(finalResultId);
+        }
+        //DrawFinal(sourceId);
         buffer.ReleaseTemporaryRT(colorGradingLUTId);
     }
     
