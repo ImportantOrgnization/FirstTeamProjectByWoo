@@ -1,8 +1,13 @@
 ﻿#ifndef CUSTOM_FXAA_PASS_INCLUDED
 #define CUSTOM_FXAA_PASS_INCLUDED
 
+float GetLuma(float2 uv)
+{
+    return sqrt( Luminance(GetSource(uv)));
+}
+
 float4 FXAAPassFragment (Varyings input) : SV_TARGET {
-	return GetSource(input.screenUV);
+	return GetLuma(input.screenUV);
 }
 
 #endif
