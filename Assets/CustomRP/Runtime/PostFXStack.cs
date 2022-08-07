@@ -27,6 +27,8 @@ public partial class PostFXStack
         ApplyColorGrading,
         FinalRescale,
         FXAA,
+        ApplyColorGradingWithLuma,
+        FXAAWithLuma,
     }
 
     public bool IsActive => settings != null;
@@ -56,14 +58,14 @@ public partial class PostFXStack
         }
     }
 
-    private bool useHDR;
+    private bool keepAlpha, useHDR;
     private int colorLUTResolution;
     private CameraSettings.FinalBlendMode finalBlendMode;
     private Vector2Int bufferSize;
     private int copyBicubicId = Shader.PropertyToID("_CopyBicubic");
     private CameraBufferSettings.BicubicRescalingMode bicubicRescaling;
     
-    public void Setup(ScriptableRenderContext context, Camera camera,Vector2Int bufferSize ,PostFXSettings settings,bool useHDR,
+    public void Setup(ScriptableRenderContext context, Camera camera,Vector2Int bufferSize ,PostFXSettings settings,bool keepAlpha,bool useHDR,
         int colorLUTResolution,CameraSettings.FinalBlendMode finalBlendMode,
         CameraBufferSettings.BicubicRescalingMode bicubicRescaling,
         CameraBufferSettings.FXAA fxaa)
@@ -71,6 +73,7 @@ public partial class PostFXStack
         this.fxaa = fxaa;
         this.bufferSize = bufferSize;
         this.colorLUTResolution = colorLUTResolution;
+        this.keepAlpha = keepAlpha;
         this.useHDR = useHDR;
         this.context = context;
         this.camera = camera;
@@ -324,14 +327,14 @@ public partial class PostFXStack
         if (fxaa.enabled)
         {
             buffer.GetTemporaryRT(colorGradingResultId,bufferSize.x,bufferSize.y,0,FilterMode.Bilinear,RenderTextureFormat.Default);
-            Draw(sourceId,colorGradingResultId,Pass.ApplyColorGrading);
+            Draw(sourceId,colorGradingResultId, keepAlpha ?  Pass.ApplyColorGrading : Pass.ApplyColorGradingWithLuma);
         }
         
         if (bufferSize.x == camera.pixelWidth)
         {
             if (fxaa.enabled)
             {
-                DrawFinal(colorGradingResultId,Pass.FXAA);
+                DrawFinal(colorGradingResultId,keepAlpha ? Pass.FXAA : Pass.FXAAWithLuma);
                 buffer.ReleaseTemporaryRT(colorGradingResultId);
             }
             else
@@ -346,7 +349,7 @@ public partial class PostFXStack
             buffer.GetTemporaryRT(finalResultId,bufferSize.x,bufferSize.y , 0 ,FilterMode.Bilinear,RenderTextureFormat.Default);
             if (fxaa.enabled)
             {
-                Draw(colorGradingResultId,finalResultId,Pass.FXAA);
+                Draw(colorGradingResultId,finalResultId,keepAlpha ? Pass.FXAA : Pass.FXAAWithLuma);
                 buffer.ReleaseTemporaryRT(colorGradingResultId);
             }
             else

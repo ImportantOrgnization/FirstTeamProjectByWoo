@@ -48,4 +48,6 @@ public class CameraSettings
     }
 
     public bool allowFXAA = false;
+
+    public bool keepAlpha = false;    // is false , calculate luma and store it in alpha channel
 }
