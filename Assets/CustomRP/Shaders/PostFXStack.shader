@@ -146,7 +146,7 @@
 			ENDHLSL
 		}
 		
-		Pass {
+		Pass {  //13
 			Name "FXAA"
 
 			Blend [_FinalSrcBlend] [_FinalDstBlend]
@@ -156,6 +156,30 @@
                 #include "FXAAPass.hlsl"
 				#pragma vertex DefaultPassVertex
 				#pragma fragment FXAAPassFragment
+			ENDHLSL
+		}
+		
+		Pass {  //14
+			Name "Apply Color Grading With Luma"
+			Blend [_FinalSrcBlend] [_FinalDstBlend]
+			HLSLPROGRAM
+				#pragma target 3.5
+				#pragma vertex DefaultPassVertex
+				#pragma fragment ApplyColorGradingWithLumaPassFragment
+			ENDHLSL
+		}
+		
+		Pass {  //15
+			Name "FXAA With Luma"
+
+			Blend [_FinalSrcBlend] [_FinalDstBlend]
+			
+			HLSLPROGRAM
+				#pragma target 3.5
+				#pragma vertex DefaultPassVertex
+				#pragma fragment FXAAPassFragment
+				#define FXAA_ALPHA_CONTAINS_LUMA
+				#include "FXAAPass.hlsl"
 			ENDHLSL
 		}
     }
