@@ -40,6 +40,8 @@ MonoBehaviour:
     copyColorReflection: 0
     renderScale: 1.113
     bicubicRescaling: 2
+    fxaa:
+      enabled: 1
   colorLUTResolution: 64
   cameraRendererShader: {fileID: 4800000, guid: 16fcb5eddabeaa146aa01c66128c097b,
     type: 3}

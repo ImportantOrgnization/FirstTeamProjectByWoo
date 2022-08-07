@@ -127,12 +127,12 @@
 		}
 		
 		Pass {  //11
-			Name "Final"
+			Name "ApplyColorGrading"
 			Blend [_FinalSrcBlend] [_FinalDstBlend]
 			HLSLPROGRAM
 				#pragma target 3.5
 				#pragma vertex DefaultPassVertex
-				#pragma fragment FinalPassFragment
+				#pragma fragment ApplyColorGradingPassFragment
 			ENDHLSL
 		}
 		
@@ -143,6 +143,19 @@
 				#pragma target 3.5
 				#pragma vertex DefaultPassVertex
 				#pragma fragment FinalPassFragmentRescale
+			ENDHLSL
+		}
+		
+		Pass {
+			Name "FXAA"
+
+			Blend [_FinalSrcBlend] [_FinalDstBlend]
+			
+			HLSLPROGRAM
+				#pragma target 3.5
+                #include "FXAAPass.hlsl"
+				#pragma vertex DefaultPassVertex
+				#pragma fragment FXAAPassFragment
 			ENDHLSL
 		}
     }
