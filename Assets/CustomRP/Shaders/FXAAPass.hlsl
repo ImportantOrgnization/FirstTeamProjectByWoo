@@ -111,24 +111,24 @@ float GetEdgeBlendFactor (LumaNeighborhood luma, FXAAEdge edge, float2 uv) {
 	float gradientThreshold = 0.25 * edge.lumaGradient;
 	
 	float2 uvP = edgeUV + uvStep;
-	float lumaGradientP = abs(GetLuma(uvP) - edgeLuma);
-	bool atEndP = lumaGradientP >= gradientThreshold;
+	float lumaDeltaP = GetLuma(uvP) - edgeLuma;
+	bool atEndP = abs(lumaDeltaP) >= gradientThreshold;
 	
 	for(int i = 0 ; i < 99 && !atEndP; i++)
 	{
 	    uvP += uvStep;
-	    lumaGradientP = abs(GetLuma(uvP) - edgeLuma);
-	    atEndP = lumaGradientP >= gradientThreshold;
+	    lumaDeltaP = GetLuma(uvP) - edgeLuma;
+	    atEndP = abs(lumaDeltaP) >= gradientThreshold;
 	}
 	
 	float2 uvN = edgeUV - uvStep;
-	float lumaGradientN = abs(GetLuma(uvN) - edgeLuma);
-	bool atEndN = lumaGradientN >= gradientThreshold;
+	float lumaDeltaN = GetLuma(uvN) - edgeLuma;
+	bool atEndN = abs(lumaDeltaN) >= gradientThreshold;
 	for(i = 0 ; i < 99 && !atEndN ; i++)
 	{
 	    uvN -= uvStep;
-	    lumaGradientN = abs(GetLuma(uvN) - edgeLuma);
-	    atEndN = lumaGradientN >= gradientThreshold;
+	    lumaDeltaN = GetLuma(uvN) - edgeLuma;
+	    atEndN = abs(lumaDeltaN) >= gradientThreshold;
 	}
 	
 	float distanceToEndP ,distanceToEndN;
@@ -141,7 +141,26 @@ float GetEdgeBlendFactor (LumaNeighborhood luma, FXAAEdge edge, float2 uv) {
 	    distanceToEndN = uvN.y - uv.y;
 	}
 	
-	return 10.0 * distanceToEndN;
+	float distanceToNearestEnd;
+    bool deltaSign; //中间采样点 和 最后一个采样点 之间的亮度差的符号
+	if(distanceToEndP <= distanceToEndN)
+	{
+	    distanceToNearestEnd = distanceToEndP;
+	    deltaSign = lumaDeltaP >= 0;
+	}
+	else
+	{
+	    distanceToNearestEnd = distanceToEndN;
+	    deltaSign = lumaDeltaN >= 0;
+	}
+	
+	if(deltaSign == (luma.m - edgeLuma >=0)){
+	    return 0.0;
+	}
+	else{
+	    return 10.0 * distanceToNearestEnd;
+	}
+	
 	
 	//return atEndP;
 	
