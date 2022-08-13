@@ -114,21 +114,26 @@ float GetEdgeBlendFactor (LumaNeighborhood luma, FXAAEdge edge, float2 uv) {
 	float lumaDeltaP = GetLuma(uvP) - edgeLuma;
 	bool atEndP = abs(lumaDeltaP) >= gradientThreshold;
 	
-	for(int i = 0 ; i < 99 && !atEndP; i++)
+	for(int i = 0 ; i < 3 && !atEndP; i++)
 	{
 	    uvP += uvStep;
 	    lumaDeltaP = GetLuma(uvP) - edgeLuma;
 	    atEndP = abs(lumaDeltaP) >= gradientThreshold;
 	}
-	
+	if (!atEndP) {  //由于只有3步，如果3步内没有找到边界，我们认为它有4步，这样子可以多出来一步，也就更精确
+		uvP += uvStep;
+	}
 	float2 uvN = edgeUV - uvStep;
 	float lumaDeltaN = GetLuma(uvN) - edgeLuma;
 	bool atEndN = abs(lumaDeltaN) >= gradientThreshold;
-	for(i = 0 ; i < 99 && !atEndN ; i++)
+	for(i = 0 ; i < 3 && !atEndN ; i++)
 	{
 	    uvN -= uvStep;
 	    lumaDeltaN = GetLuma(uvN) - edgeLuma;
 	    atEndN = abs(lumaDeltaN) >= gradientThreshold;
+	}
+	if (!atEndN) {
+		uvN -= uvStep;
 	}
 	
 	float distanceToEndP ,distanceToEndN;
