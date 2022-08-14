@@ -20,7 +20,7 @@ MonoBehaviour:
     maxDistance: 10
     distanceFade: 0.14
     directional:
-      atlasSize: 256
+      atlasSize: 1024
       filter: 0
       cascadeCount: 4
       cascadeRatio1: 0.212
@@ -38,12 +38,14 @@ MonoBehaviour:
     copyDepthReflection: 0
     copyColor: 1
     copyColorReflection: 0
-    renderScale: 1.113
+    renderScale: 0.27
     bicubicRescaling: 2
     fxaa:
       enabled: 1
-      fixedThreshold: 0.0564
-      relativeThreshold: 0.208
+      fixedThreshold: 0.0634
+      relativeThreshold: 0.239
+      subpixelBlending: 0
+      quality: 2
   colorLUTResolution: 64
   cameraRendererShader: {fileID: 4800000, guid: 16fcb5eddabeaa146aa01c66128c097b,
     type: 3}
