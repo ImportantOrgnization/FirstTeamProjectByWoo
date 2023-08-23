@@ -445,7 +445,7 @@ public class Shadows
     Matrix4x4 ConvertToAtlasMatrix(Matrix4x4 m, Vector2 offset, float scale)
     {
         //如果使用了反向ZBuffer
-        if (SystemInfo.usesReversedZBuffer)
+        if (SystemInfo.usesReversedZBuffer)    //这里取相反数的原理，我在《3D数学基础》 4.1.6 章节做了解释 P * V 矩阵中的 V矩阵第三列取相反数，会导致矩阵 P*V 的第三列全取相反数的
         {
             m.m20 = -m.m20;
             m.m21 = -m.m21;
